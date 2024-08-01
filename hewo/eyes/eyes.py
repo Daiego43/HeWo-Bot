@@ -1,5 +1,5 @@
 import pygame
-from hewo_game.hewo_game_sandbox import SandBox
+from hewo.sandbox import SandBox
 
 
 class HewoEye:
@@ -33,19 +33,20 @@ class HewoEye:
 
 class HewoEyes():
     DISTANCE_BETWEEN_EYES = 300
+    INIT_POSITION = (300, 50)
 
-    def __init__(self, position=(300, 50), teleop=False):
+    def __init__(self, position=INIT_POSITION, enable_teleop=False):
         self.eye_left = HewoEye()
         self.eye_right = HewoEye()
         self.boundaries = (960, 640)
-        self.teleop = teleop
+        self.enable_teleop = enable_teleop
         self.position = position
         self.set_position(position)
 
     def update(self):
         self.eye_left.update()
         self.eye_right.update()
-        if self.teleop:
+        if self.enable_teleop:
             self.handle_input()
 
     def handle_input(self):
@@ -73,13 +74,11 @@ class HewoEyes():
     def set_position(self, position):
         screen_width, screen_height = self.boundaries
 
-        # Adjust position to keep left eye within screen boundaries
-        x_left = max(0, min(position[0], screen_width - self.eye_left.size[0]))
+        # Calculate new positions ensuring they stay within bounds
+        x_left = max(0, min(position[0], screen_width - self.DISTANCE_BETWEEN_EYES - self.eye_left.size[0]))
         y_left = max(0, min(position[1], screen_height - self.eye_left.size[1]))
 
-        # Adjust position to keep right eye within screen boundaries
-        x_right = max(self.DISTANCE_BETWEEN_EYES,
-                      min(position[0] + self.DISTANCE_BETWEEN_EYES, screen_width - self.eye_right.size[0]))
+        x_right = max(0, min(position[0] + self.DISTANCE_BETWEEN_EYES, screen_width - self.eye_right.size[0]))
         y_right = max(0, min(position[1], screen_height - self.eye_right.size[1]))
 
         self.position = (x_left, y_left)
@@ -91,6 +90,6 @@ class HewoEyes():
 
 
 if __name__ == '__main__':
-    eyes = HewoEyes(teleop=True)
+    eyes = HewoEyes(enable_teleop=True)
     game = SandBox(elements=[eyes])
     game.run()
