@@ -20,7 +20,7 @@ class HeWoMouth:
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
-        step = 10
+        step = 20
         act_position = self.get_position()
         if keys[pygame.K_UP]:
             act_position = (act_position[0], act_position[1] - step)
@@ -41,7 +41,7 @@ class HeWoMouth:
         pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 10)
 
     def set_position(self, position):
-        x = max(100, min(position[0], self.BOUNDARIES[0] - self.MOUTH_MAX_SIZE[0] -100))
+        x = max(100, min(position[0], self.BOUNDARIES[0] - self.MOUTH_MAX_SIZE[0] - 100))
         y = max(350, min(position[1], self.BOUNDARIES[1] - self.MOUTH_MAX_SIZE[1]))
         self.position = (x, y)
 

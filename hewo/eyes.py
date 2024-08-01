@@ -73,7 +73,7 @@ class HeWoEyes():
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
-        step = 10
+        step = 20
         act_position = self.get_position()
         if keys[pygame.K_UP]:
             act_position = (act_position[0], act_position[1] - step)
@@ -113,14 +113,14 @@ class HeWoEyes():
             self.eye_left.EYE_MAX_SIZE[1] / 2,
             min(
                 position[1],
-                screen_height - self.eye_left.EYE_MAX_SIZE[1] / 2
+                screen_height - self.eye_left.EYE_MAX_SIZE[1] / 2 - 100
             )
         )
 
         y_right = max(
             self.eye_right.EYE_MAX_SIZE[1] / 2,
             min(position[1],
-                screen_height - self.eye_right.EYE_MAX_SIZE[1] / 2)
+                screen_height - self.eye_right.EYE_MAX_SIZE[1] / 2 - 100)
         )
 
         self.position = (x_left, y_left)

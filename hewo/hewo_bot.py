@@ -4,8 +4,7 @@ from hewo.mouth import HeWoMouth
 from hewo.sandbox import SandBox
 
 
-class HeWoFace:
-
+class HeWo:
     def __init__(self, enable_teleop=False):
         self.eyes = HeWoEyes(enable_teleop=enable_teleop)
         self.mouth = HeWoMouth(enable_teleop=enable_teleop)
@@ -24,6 +23,6 @@ class HeWoFace:
 
 
 if __name__ == '__main__':
-    elements = [HeWoFace(enable_teleop=True)]
+    elements = [HeWo(enable_teleop=True)]
     sandbox = SandBox(elements)
     sandbox.run()
