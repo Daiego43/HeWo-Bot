@@ -3,6 +3,7 @@ import pygame
 import os
 import sys
 
+
 class SandBox:
     WINDOW_WIDTH = 960
     WINDOW_HEIGHT = 640
@@ -40,6 +41,9 @@ class SandBox:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_f:
                     self.toggle_fullscreen()
+            if self.elements is not None:
+                for elem in self.elements:
+                    elem.handle_event(event)
 
     def update(self):
         if self.elements is not None:
