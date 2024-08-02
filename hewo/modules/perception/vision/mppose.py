@@ -17,7 +17,7 @@ class MediaPeoplePoses:
         self.results = None
         self.poselist = []
 
-    def update_pose_info(self, rgb_frame):
+    def update_info(self, rgb_frame):
         self.results = self.pose.process(rgb_frame)
         poselist = []
         if self.results.pose_landmarks:
@@ -36,7 +36,7 @@ class MediaPeoplePoses:
         return self.results
 
     def draw_landmarks(self, color_image, rgb_frame):
-        self.update_pose_info(rgb_frame)
+        self.update_info(rgb_frame)
         if self.results is not None:
             mp_drawing.draw_landmarks(
                 color_image,

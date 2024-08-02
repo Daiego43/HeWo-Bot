@@ -36,7 +36,7 @@ class MediaPeopleFaces:
     def get_detector_results(self):
         return self.detector_results
 
-    def update_face_info(self, color_image, rgb_frame):
+    def update_info(self, color_image, rgb_frame):
         self.detector_results = self.face_detector.process(rgb_frame)
         self.mesh_results = self.face_mesh.process(rgb_frame)
         bbox_list = []
@@ -60,7 +60,7 @@ class MediaPeopleFaces:
         self.face_list = face_list
 
     def draw_landmarks(self, color_image, rgb_frame):
-        self.update_face_info(color_image, rgb_frame)
+        self.update_info(color_image, rgb_frame)
         img = self.draw_mesh(color_image)
         img = self.draw_boxes(img)
         return img

@@ -13,17 +13,17 @@ class MediaPeople:
         self.hand_list = []
         self.bbox_list = []
 
-    def update_person_info(self, rgb_frame, color_image):
-        self.face.update_face_info(rgb_frame=rgb_frame, color_image=color_image)
-        self.pose.update_pose_info(rgb_frame=rgb_frame)
-        self.hand.update_hand_info(rgb_frame=rgb_frame)
+    def update_info(self, rgb_frame, color_image):
+        self.face.update_info(rgb_frame=rgb_frame, color_image=color_image)
+        self.pose.update_info(rgb_frame=rgb_frame)
+        self.hand.update_info(rgb_frame=rgb_frame)
         self.face_list = self.face.get_face_list()
         self.pose_list = self.pose.get_pose_list()
         self.hand_list = self.hand.get_hand_list()
         self.bbox_list = self.face.get_bbox_list()
 
     def draw_landmarks(self, color_image, rgb_frame):
-        self.update_person_info(color_image=color_image, rgb_frame=rgb_frame)
+        self.update_info(color_image=color_image, rgb_frame=rgb_frame)
         color_image = self.face.draw_landmarks(color_image, rgb_frame)
         color_image = self.pose.draw_landmarks(color_image, rgb_frame)
         color_image = self.hand.draw_landmarks(color_image, rgb_frame)

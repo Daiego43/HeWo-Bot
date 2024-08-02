@@ -29,12 +29,7 @@ def save_person(person):
 def main():
     objects = [MediaPeopleFaces()]
     camera = RealSenseCamera(objects=objects)
-    camera.init_capture(
-        person_parts_objects=objects,
-        end=None,
-        plt_rpr=False,
-        cv_rpr=False
-    )
+    camera.init_capture(cv_rpr=True)
 
 
 if __name__ == '__main__':

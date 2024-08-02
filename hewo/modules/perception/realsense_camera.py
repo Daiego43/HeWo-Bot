@@ -4,7 +4,7 @@ import joblib
 import numpy as np
 import pyrealsense2 as rs
 import matplotlib.pyplot as plt
-from hewo.modules.perception.vision.mpface import MediaPeopleFaces
+from hewo.modules.perception.vision.mppeople import MediaPeople
 
 
 class RealSenseCamera:
@@ -23,6 +23,7 @@ class RealSenseCamera:
         self.config.enable_stream(rs.stream.depth, self.width, self.height, rs.format.z16, self.fps)
         self.config.enable_stream(rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps)
         self.objects = objects
+        self.process = None
 
     def get_rgb_frame(self):
         frames = self.pipeline.wait_for_frames()
@@ -33,29 +34,30 @@ class RealSenseCamera:
         rgb_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
         return color_image, rgb_frame
 
-    def init_capture(self, person_parts_objects, end=None, plt_rpr=True, cv_rpr=True):
+    def init_capture(self, end=None, plt_rpr=False, cv_rpr=False):
         self.pipeline.start(self.config)
         if plt_rpr:
             fig = plt.figure()
-        i = 100 + len(person_parts_objects) * 10 + 1
+        i = 100 + len(self.objects) * 10 + 1
         start = time.time()
         cond = lambda t: True
         if end is not None:
             cond = lambda t: t - start < end
         try:
             while cond(time.time()):
+                print(self.objects[0].bbox_list)
                 img, rgb = self.get_rgb_frame()
                 if img is not None:
                     if plt_rpr:
                         plt.clf()
-                    for obj in person_parts_objects:
-                        obj.update_info(rgb)
+                    for obj in self.objects:
+                        obj.update_info(img, rgb)
                         img = obj.draw_landmarks(img, rgb)
                         if plt_rpr:
                             ax = fig.add_subplot(i, projection='3d')
                             obj.plt_3D_repr(ax)
                             i += 1
-                    i = 100 + len(person_parts_objects) * 10 + 1
+                    i = 100 + len(self.objects) * 10 + 1
                     if cv_rpr:
                         cv2.imshow('RGB', img)
                         cv2.waitKey(1)
@@ -64,3 +66,9 @@ class RealSenseCamera:
         finally:
             self.pipeline.stop()
             cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    people = MediaPeople()
+    camera = RealSenseCamera([people])
+    camera.init_capture(cv_rpr=True)

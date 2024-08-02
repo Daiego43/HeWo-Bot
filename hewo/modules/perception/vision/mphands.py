@@ -16,7 +16,7 @@ class MediaPeopleHands:
         self.results = None
         self.hand_list = []
 
-    def update_hand_info(self, rgb_frame):
+    def update_info(self, rgb_frame):
         self.results = self.hands.process(rgb_frame)
         hand_list = []
         if self.results.multi_hand_landmarks:
@@ -35,7 +35,7 @@ class MediaPeopleHands:
         return self.results
 
     def draw_landmarks(self, color_image, rgb_frame):
-        self.update_hand_info(rgb_frame)
+        self.update_info(rgb_frame)
         if self.results.multi_hand_landmarks is not None:
             for hand_landmarks in self.results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
