@@ -1,5 +1,4 @@
 import random
-
 import pygame
 from hewo.game_elements.characters.hewo.eyes import HeWoEye
 from hewo.game_elements.characters.hewo.mouth import HeWoMouth
@@ -40,7 +39,11 @@ class HeWoFace:
                                        bbox=self.MOUTH_BBOX))
         self.enable_follow_mouse = enable_follow_mouse
         self.enable_tracking = enable_tracking
-        self.face_tracker = RealSenseCamera([MediaPeopleFaces()])
+        try:
+            self.face_tracker = RealSenseCamera([MediaPeopleFaces()])
+        except RuntimeError:
+            print("No RealSense Camera, tracking disabled.")
+            self.enable_tracking = False
         if enable_tracking:
             self.face_tracker.start_camera()
 
@@ -91,7 +94,7 @@ class HeWoFace:
         distance_to_mouth = 50
         for elem in self.elements:
             if elem.name == 'mouth':
-                elem.set_position((pos[0], pos[1]))
+                elem.set_position((pos[0], pos[1] + distance_to_mouth))
             elif elem.name == 'left':
                 elem.set_position((pos[0] - distance_to_mouth, pos[1]))
             elif elem.name == 'right':

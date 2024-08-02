@@ -9,6 +9,7 @@ class HeWoMouth:
     MOUTH_SIZE = (175, 50)
     MOUTH_COLOR = (231, 210, 146)
     MOVE_STEP = 20
+    ANIMATION_STEP = 10
 
     def __init__(self, name="mouth", position=INIT_POSITION, bbox=BBOX, size=MOUTH_SIZE):
         self.name = name
@@ -17,9 +18,22 @@ class HeWoMouth:
         self.move_step = self.MOVE_STEP
         self.bbox = bbox
         self.set_position(position)
+        self.mouth_opening = 0
+        self.increment = 1
+        self.mouth_state = 'smiling'
 
     def update(self):
         self.handle_input()
+
+    def move_lips(self):
+        if self.increment > 0:
+            self.mouth_opening += self.increment
+            if self.mouth_opening >= self.MOUTH_SIZE[0] // 2:
+                self.increment *= -1
+        if self.increment < 0:
+            self.mouth_opening += self.increment
+            if self.mouth_opening <= 0:
+                self.increment *= -1
 
     def handle_input(self, step=MOVE_STEP):
         keys = pygame.key.get_pressed()
@@ -56,13 +70,20 @@ class HeWoMouth:
         self.size = size
 
     def draw(self, screen):
-        rect = [self.position[0], self.position[1], self.size[0], self.size[1]]
-        pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 10)
-
-
-if __name__ == '__main__':
-    elements = [
-        HeWoMouth(name="mouth")
-    ]
-    sandbox = SandBox(elements)
-    sandbox.run()
+        self.move_lips()
+        start = self.position[0], self.position[1]
+        end = self.size[0], self.size[1]
+        match self.mouth_state:
+            case 'talking':
+                rect = [start[0], start[1], end[0], end[1]]
+                pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 5)
+                start = self.position[0], self.position[1] + self.size[1] // 2
+                end = self.position[0] + self.size[0], self.position[1] + self.size[1] // 2
+                pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=5)
+            case 'smiling':
+                rect = [start[0], start[1], end[0], end[1]]
+                pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 5)
+            case _:
+                start = self.position[0], self.position[1] + self.size[1] // 2
+                end = self.position[0] + self.size[0], self.position[1] + self.size[1] // 2
+                pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=5)
