@@ -33,7 +33,7 @@ def main():
         person_parts_objects=objects,
         end=None,
         plt_rpr=False,
-        cv_rpr=True
+        cv_rpr=False
     )
 
 

@@ -1,5 +1,5 @@
 import pygame
-from hewo.elements.sandbox import SandBox
+from hewo.game_elements.scenes.sandbox import SandBox
 
 
 class HeWoMouth:

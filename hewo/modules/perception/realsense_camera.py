@@ -49,6 +49,7 @@ class RealSenseCamera:
                     if plt_rpr:
                         plt.clf()
                     for obj in person_parts_objects:
+                        obj.update_info(rgb)
                         img = obj.draw_landmarks(img, rgb)
                         if plt_rpr:
                             ax = fig.add_subplot(i, projection='3d')
