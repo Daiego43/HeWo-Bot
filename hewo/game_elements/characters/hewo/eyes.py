@@ -1,13 +1,14 @@
 import pygame
+import random
 from hewo.game_elements.scenes.sandbox import SandBox
 
 
 class HeWoEye:
     EYE_MAX_SIZE = (940 // 20, 640 // 3)
     EYE_COLOR = (231, 210, 146)
-    BLINK_STEP = 30
+    BLINK_STEP = 40
     MOVE_STEP = 20
-    BLINK_RATE = 60 * 4
+    BLINK_RATE = 60
     GROW = True
     SHRINK = False
 
@@ -35,16 +36,19 @@ class HeWoEye:
     def blink(self):
         if self.blink_state == self.SHRINK:
             self.size = (self.size[0], self.size[1] - self.blink_step)
-            self.blink_step *= 1.1
+            self.blink_step *= 1.2
             if self.size[1] <= 0:
                 self.blink_step = self.BLINK_STEP
                 self.blink_state = self.GROW
 
         if self.blink_state == self.GROW:
             self.size = (self.size[0], self.size[1] + self.blink_step)
-            if self.size[1] >= self.EYE_MAX_SIZE[1]:
+            self.blink_step += 10
+            if self.size[1] > self.EYE_MAX_SIZE[1]:
+                self.set_size((self.size[0], self.EYE_MAX_SIZE[1]))
                 self.blink_state = self.SHRINK
                 self.enable_blink = False
+
 
     def draw(self, screen):
         # Calcula la posición superior izquierda desde el centro

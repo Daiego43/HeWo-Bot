@@ -10,18 +10,25 @@ class SandBox:
     HEWO_DISPLAY = 0
     HEWO_MONITOR_NAME = "DP-1"
 
-    def __init__(self, elements=None):
+    def __init__(self, elements=None, fullscreen=False):
         pygame.init()
         self.find_and_set_display()
         pygame.display.set_caption("Testing Sandbox")
         print("Press F to toggle fullscreen.")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.is_fullscreen = False
+        self.is_fullscreen = fullscreen
         self.elements = elements
+
+        if self.is_fullscreen:
+            flags = pygame.FULLSCREEN
+        else:
+            flags = pygame.RESIZABLE
+
         self.screen = pygame.display.set_mode(size=self.WINDOW_SIZE,
-                                              flags=pygame.RESIZABLE,
-                                              display=self.HEWO_DISPLAY)
+                                              flags=flags,
+                                              display=self.HEWO_DISPLAY,
+                                              vsync=True)
 
     def find_and_set_display(self):
         print("Looking for HeWo's display...")
