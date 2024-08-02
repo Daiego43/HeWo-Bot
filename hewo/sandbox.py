@@ -8,22 +8,27 @@ class SandBox:
     WINDOW_WIDTH = 960
     WINDOW_HEIGHT = 640
     BACKGROUND_COLOR = (100, 139, 127)
+    HEWO_DISPLAY = 1
 
     def __init__(self, elements=None):
         pygame.init()
         self.find_and_set_display()
         pygame.display.set_caption("Testing Sandbox")
         print("Press F to toggle fullscreen.")
-        self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.running = True
-        self.is_fullscreen = False
+        self.is_fullscreen = True
         self.elements = elements
+        self.toggle_fullscreen()
 
     def find_and_set_display(self):
-        for monitor in screeninfo.get_monitors():
-            if monitor.width == self.WINDOW_WIDTH and monitor.height == self.WINDOW_HEIGHT:
+        print("Looking for HeWo's display...")
+        for i, monitor in enumerate(screeninfo.get_monitors()):
+            print(monitor.name, monitor.x, monitor.y, monitor.width, monitor.height)
+            if (monitor.width, monitor.height) == (self.WINDOW_WIDTH, self.WINDOW_HEIGHT):
                 os.environ['SDL_VIDEO_WINDOW_POS'] = f"{monitor.x},{monitor.y}"
+                self.HEWO_DISPLAY = i
+                print("HeWo's display found!")
                 break
 
     def run(self):
@@ -59,10 +64,16 @@ class SandBox:
 
     def toggle_fullscreen(self):
         if self.is_fullscreen:
-            self.screen = pygame.display.set_mode((self.WINDOW_WIDTH, self.WINDOW_HEIGHT), pygame.RESIZABLE)
+            self.screen = pygame.display.set_mode(size=(self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
+                                                  flags=pygame.RESIZABLE,
+                                                  display=self.HEWO_DISPLAY,
+                                                  vsync=1)
             self.is_fullscreen = False
         else:
-            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            self.screen = pygame.display.set_mode(size=(0, 0),
+                                                  flags=pygame.FULLSCREEN,
+                                                  display=self.HEWO_DISPLAY,
+                                                  vsync=1)
             self.is_fullscreen = True
 
     def quit(self):
