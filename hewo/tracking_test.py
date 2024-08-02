@@ -29,7 +29,11 @@ def save_person(person):
 def main():
     objects = [MediaPeopleFaces()]
     camera = RealSenseCamera(objects=objects)
-    camera.init_capture(cv_rpr=True)
+    camera.viewer(end=10, cv_rpr=True)
+    camera.start_camera()
+    while True:
+        objects = camera.get_objects()
+        print(objects[0].get_bbox_list())
 
 
 if __name__ == '__main__':

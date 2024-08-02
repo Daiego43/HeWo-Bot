@@ -25,6 +25,12 @@ class RealSenseCamera:
         self.objects = objects
         self.process = None
 
+    def start_camera(self):
+        self.pipeline.start(self.config)
+
+    def stop_camera(self):
+        self.pipeline.stop()
+
     def get_rgb_frame(self):
         frames = self.pipeline.wait_for_frames()
         color_frame = frames.get_color_frame()
@@ -34,8 +40,16 @@ class RealSenseCamera:
         rgb_frame = cv2.cvtColor(color_image, cv2.COLOR_BGR2RGB)
         return color_image, rgb_frame
 
-    def init_capture(self, end=None, plt_rpr=False, cv_rpr=False):
-        self.pipeline.start(self.config)
+    def get_objects(self):
+        img, rgb = self.get_rgb_frame()
+        if img is not None:
+            for obj in self.objects:
+                obj.update_info(img, rgb)
+            return self.objects
+        return None
+
+    def viewer(self, end=None, plt_rpr=False, cv_rpr=False):
+        self.start_camera()
         if plt_rpr:
             fig = plt.figure()
         i = 100 + len(self.objects) * 10 + 1
@@ -45,7 +59,6 @@ class RealSenseCamera:
             cond = lambda t: t - start < end
         try:
             while cond(time.time()):
-                print(self.objects[0].bbox_list)
                 img, rgb = self.get_rgb_frame()
                 if img is not None:
                     if plt_rpr:
@@ -64,7 +77,7 @@ class RealSenseCamera:
                     if plt_rpr:
                         plt.pause(0.00000001)
         finally:
-            self.pipeline.stop()
+            self.stop_camera()
             cv2.destroyAllWindows()
 
 
