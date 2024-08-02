@@ -11,10 +11,10 @@ class HeWoEye:
     GROW = True
     SHRINK = False
 
-    def __init__(self, name, position=(0, 0), bbox=((0, 960), (0, 640))):
+    def __init__(self, name, size=EYE_MAX_SIZE, position=(0, 0), bbox=((0, 960), (0, 640))):
         self.name = name
         self.color = self.EYE_COLOR
-        self.size = self.EYE_MAX_SIZE
+        self.size = size
         self.position = position
         self.update_count = 0
         self.blink_rate = self.BLINK_RATE
@@ -53,17 +53,17 @@ class HeWoEye:
         self.validate_position()
         pygame.draw.ellipse(screen, self.color, (*top_left, *self.size))
 
-    def handle_input(self):
+    def handle_input(self, step=MOVE_STEP):
         keys = pygame.key.get_pressed()
         position = list(self.get_position())
         if keys[pygame.K_UP]:
-            position[1] -= self.move_step
+            position[1] -= step
         if keys[pygame.K_DOWN]:
-            position[1] += self.move_step
+            position[1] += step
         if keys[pygame.K_LEFT]:
-            position[0] -= self.move_step
+            position[0] -= step
         if keys[pygame.K_RIGHT]:
-            position[0] += self.move_step
+            position[0] += step
         self.set_position(position)
 
     def validate_position(self):
