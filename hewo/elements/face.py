@@ -1,7 +1,7 @@
 import pygame
-from hewo.eyes import HeWoEye
-from hewo.mouth import HeWoMouth
-from hewo.sandbox import SandBox
+from hewo.elements.eyes import HeWoEye
+from hewo.elements.mouth import HeWoMouth
+from hewo.elements.sandbox import SandBox
 
 
 class HeWoFace:

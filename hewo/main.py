@@ -1,5 +1,5 @@
-from hewo.sandbox import SandBox
-from hewo.face import HeWoFace
+from hewo.elements.sandbox import SandBox
+from hewo.elements.face import HeWoFace
 
 if __name__ == '__main__':
     elements = [
