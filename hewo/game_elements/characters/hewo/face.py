@@ -9,6 +9,7 @@ from hewo.modules.perception.vision.mppeople import MediaPeopleFaces
 
 class HeWoFace:
     FACE_SURFACE = (960, 640)
+    REDUCED_FACE_SURFACE = (960//6, 640//6)
     MOUTH_SIZE = (FACE_SURFACE[0] // 6, FACE_SURFACE[1] // 6)
     LEFT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
     RIGHT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
@@ -47,6 +48,7 @@ class HeWoFace:
             self.enable_tracking = False
         if enable_tracking:
             self.face_tracker.start_camera()
+        self.face_surface = pygame.Surface(self.FACE_SURFACE)
 
     def update(self):
         self.handle_input()
@@ -79,9 +81,14 @@ class HeWoFace:
         screen_y = int(camera_y * self.FACE_SURFACE[1] / 480)
         return screen_x, screen_y
 
-    def draw(self, screen):
+    def draw(self, screen: pygame.Surface):
+        self.face_surface.fill(screen.get_at((0, 0)))  # Limpia la superficie a baja resolución
         for elem in self.elements:
-            elem.draw(screen)
+            elem.draw(self.face_surface)
+        # Escalar la superficie a la resolución original
+        reduced = pygame.transform.scale(self.face_surface, self.REDUCED_FACE_SURFACE)
+        normal_again = pygame.transform.scale(reduced, self.FACE_SURFACE)
+        screen.blit(normal_again, (0, 0))
 
     def handle_event(self, event):
         for elem in self.elements:

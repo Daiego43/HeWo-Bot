@@ -111,15 +111,15 @@ class HeWoMouth:
         end = self.position[0] + self.size[0], self.position[1] + new_size // 2
 
         pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=5)
-        pygame.draw.arc(screen, self.MOUTH_COLOR, curv, 3.14, 0, 5)
+        pygame.draw.arc(screen, self.MOUTH_COLOR, curv, 3.14, 0, 10)
 
     def smiling_mouth(self, screen):
         start = self.position[0], self.position[1]
         end = self.size[0], self.size[1]
         rect = [start[0], start[1], end[0], end[1]]
-        pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 5)
+        pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 10)
 
     def plane_mouth(self, screen):
         start = self.position[0], self.position[1] + self.size[1] // 2
         end = self.position[0] + self.size[0], self.position[1] + self.size[1] // 2
-        pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=5)
+        pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=10)
