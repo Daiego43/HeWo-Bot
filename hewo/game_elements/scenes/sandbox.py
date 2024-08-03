@@ -34,7 +34,6 @@ class SandBox:
         print("Looking for HeWo's display...")
         found = False
         for i, monitor in enumerate(screeninfo.get_monitors()):
-            print(f"Display {i}: {monitor.name} - {monitor.width}x{monitor.height}")
             if monitor.name == self.HEWO_MONITOR_NAME:
                 self.HEWO_DISPLAY = i
                 self.WINDOW_SIZE = monitor.width, monitor.height

@@ -32,6 +32,8 @@ class HeWoEye:
             self.enable_blink = True
         if self.enable_blink:
             self.blink()
+        if self.update_count > 6000:
+            self.update_count = 0
 
     def blink(self):
         if self.blink_state == self.SHRINK:
@@ -48,7 +50,6 @@ class HeWoEye:
                 self.set_size((self.size[0], self.EYE_MAX_SIZE[1]))
                 self.blink_state = self.SHRINK
                 self.enable_blink = False
-
 
     def draw(self, screen):
         # Calcula la posición superior izquierda desde el centro

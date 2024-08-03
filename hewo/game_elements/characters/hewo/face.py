@@ -10,18 +10,19 @@ from hewo.modules.perception.vision.mppeople import MediaPeopleFaces
 class HeWoFace:
     FACE_SURFACE = (960, 640)
     MOUTH_SIZE = (FACE_SURFACE[0] // 6, FACE_SURFACE[1] // 6)
-    MOUTH_BBOX = ((MOUTH_SIZE[0] // 2, FACE_SURFACE[0] - MOUTH_SIZE[0] // 2),
-                  (MOUTH_SIZE[1], FACE_SURFACE[1]))
+    LEFT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
+    RIGHT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
 
     DISTANCE_BETWEEN_EYES = MOUTH_SIZE[0]
 
-    LEFT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
-    LEFT_EYE_BBOX = ((0, FACE_SURFACE[0] - DISTANCE_BETWEEN_EYES - LEFT_EYE_SIZE[0] * 2.5),
-                     (0, FACE_SURFACE[1] - MOUTH_SIZE[1]))
+    MOUTH_BBOX = ((MOUTH_SIZE[0] // 2, FACE_SURFACE[0] - MOUTH_SIZE[0] // 2),
+                  (MOUTH_SIZE[1] + LEFT_EYE_SIZE[1] // 2, FACE_SURFACE[1]))
 
-    RIGHT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
+    LEFT_EYE_BBOX = ((0, FACE_SURFACE[0] - DISTANCE_BETWEEN_EYES - LEFT_EYE_SIZE[0] * 2.5),
+                     (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
+
     RIGHT_EYE_BBOX = ((DISTANCE_BETWEEN_EYES + RIGHT_EYE_SIZE[0] * 2.5, FACE_SURFACE[0]),
-                      (0, FACE_SURFACE[1] - MOUTH_SIZE[1]))
+                      (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
 
     MOVE_STEP = 15
 
@@ -56,8 +57,8 @@ class HeWoFace:
         for elem in self.elements:
             elem.update()
 
-    def random_blink(self):
-        blinking_rate = 60 * random.randint(1, 5)
+    def set_random_blink_rate(self):
+        blinking_rate = 15 * random.randint(1, 10)
         self.elements[0].blink_rate = blinking_rate
         self.elements[1].blink_rate = blinking_rate
 
