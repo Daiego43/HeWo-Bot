@@ -1,26 +1,15 @@
 from hewo.game.scenes.sandbox import SandBox
-from hewo.game.characters.hewo.face import HeWoFace
+from hewo.game.characters.hewo.face import HewoFace
+from hewo.settings.settings_loader import SettingsLoader
 
-TRACKING = True
+LOADER = SettingsLoader().load_settings('hewo.settings.game')
+FULLSCREEN = LOADER['game']['display']['fullscreen']
 FOLLOW_MOUSE = False
-FULLSCREEN = False
-
+TRACKING = False
 
 if __name__ == '__main__':
     elements = [
-        HeWoFace(enable_follow_mouse=FOLLOW_MOUSE,
-                 enable_tracking=TRACKING)
+        HewoFace()
     ]
     sandbox = SandBox(elements, fullscreen=FULLSCREEN)
     sandbox.run()
-
-
-
-
-
-
-
-
-
-
-

@@ -2,13 +2,22 @@ import screeninfo
 import pygame
 import os
 import sys
+from hewo.settings.settings_loader import SettingsLoader
+
+SETTINGS = SettingsLoader().load_settings('hewo.settings.game')
 
 
 class SandBox:
-    WINDOW_SIZE = 960, 640
-    BACKGROUND_COLOR = (100, 139, 127)
-    HEWO_DISPLAY = 0
-    HEWO_MONITOR_NAME = "DP-1"
+    display = SETTINGS['game']['display']
+    WINDOW_SIZE = (
+        display['width'],
+        display['height']
+    )
+    BACKGROUND_COLOR = (display['bg_color']['r'],
+                        display['bg_color']['g'],
+                        display['bg_color']['b'])
+    HEWO_DISPLAY = display['id']
+    HEWO_MONITOR_NAME = display['name']
 
     def __init__(self, elements=None, fullscreen=False):
         pygame.init()
@@ -34,7 +43,7 @@ class SandBox:
         print("Looking for HeWo's display...")
         found = False
         for i, monitor in enumerate(screeninfo.get_monitors()):
-            if monitor.name == self.HEWO_MONITOR_NAME:
+            if monitor.width == self.WINDOW_SIZE[0] and monitor.height == self.WINDOW_SIZE[1]:
                 self.HEWO_DISPLAY = i
                 self.WINDOW_SIZE = monitor.width, monitor.height
                 os.environ['SDL_VIDEO_WINDOW_POS'] = f"{monitor.x},{monitor.y}"

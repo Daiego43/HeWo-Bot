@@ -1,119 +1,110 @@
-import random
+"""
+I have taken notes on how I want Hewo's face to look like.
+I will be using this as a reference to create the face.
+This also will require to create an extense yaml config
+file to store game properties.
+"""
 import pygame
-from hewo.game.characters.hewo.eyes import HeWoEye
-from hewo.game.characters.hewo.mouth import HeWoMouth
-from hewo.game.scenes.sandbox import SandBox
-from hewo.modules.perception.realsense_camera import RealSenseCamera
-from hewo.modules.perception.vision.mppeople import MediaPeopleFaces
+import math
+from hewo.settings.settings_loader import SettingsLoader
+
+LOADER = SettingsLoader()
 
 
-class HeWoFace:
-    FACE_SURFACE = (960, 640)
-    REDUCED_FACE_SURFACE = (960//6, 640//6)
-    MOUTH_SIZE = (FACE_SURFACE[0] // 6, FACE_SURFACE[1] // 6)
-    LEFT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
-    RIGHT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
+class HewoFace:
+    face = LOADER.load_settings('hewo.settings.hewo.face')
 
-    DISTANCE_BETWEEN_EYES = MOUTH_SIZE[0]
+    HEART = (1 + math.sqrt(5))
+    MAX_SIZE = [face['width'],
+                face['height']]
+    FACE_SIZE = [face['width'] / HEART,
+                 face['height'] / HEART]
+    INIT_POSITION = [face['position']['x'],
+                     face['position']['y']]
+    FACE_COLOR = [face['color']['r'],
+                  face['color']['g'],
+                  face['color']['b']]
+    SPEED = face['speed']
+    SPEED_STEP = face['speed_step']
+    SIZE_STEP = face['size_step']
+    SIZE_FACTOR = face['size_factor']
 
-    MOUTH_BBOX = ((MOUTH_SIZE[0] // 2, FACE_SURFACE[0] - MOUTH_SIZE[0] // 2),
-                  (MOUTH_SIZE[1] + LEFT_EYE_SIZE[1] // 2, FACE_SURFACE[1]))
-
-    LEFT_EYE_BBOX = ((0, FACE_SURFACE[0] - DISTANCE_BETWEEN_EYES - LEFT_EYE_SIZE[0] * 2.5),
-                     (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
-
-    RIGHT_EYE_BBOX = ((DISTANCE_BETWEEN_EYES + RIGHT_EYE_SIZE[0] * 2.5, FACE_SURFACE[0]),
-                      (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
-
-    MOVE_STEP = 1
-
-    def __init__(self, enable_follow_mouse=False, enable_tracking=True):
-        self.elements = []
-        self.move_step = self.MOVE_STEP
-        self.elements.append(HeWoEye(name="left",
-                                     bbox=self.LEFT_EYE_BBOX,
-                                     size=self.LEFT_EYE_SIZE))
-        self.elements.append(HeWoEye(name="right",
-                                     bbox=self.RIGHT_EYE_BBOX,
-                                     size=self.RIGHT_EYE_SIZE))
-        self.elements.append(HeWoMouth(name="mouth",
-                                       size=self.MOUTH_SIZE,
-                                       bbox=self.MOUTH_BBOX))
-        self.enable_follow_mouse = enable_follow_mouse
-        self.enable_tracking = enable_tracking
-        try:
-            self.face_tracker = RealSenseCamera([MediaPeopleFaces()])
-            if enable_tracking:
-                self.face_tracker.start_camera()
-        except RuntimeError:
-            print("No RealSense Camera, tracking disabled.")
-            self.enable_tracking = False
-        self.face_surface = pygame.Surface(self.FACE_SURFACE)
-
-    def update(self):
-        self.handle_input()
-        if self.enable_follow_mouse:
-            self.follow_mouse()
-        if self.enable_tracking:
-            self.track()
-        for elem in self.elements:
-            elem.update()
-
-    def set_random_blink_rate(self):
-        blinking_rate = 15 * random.randint(1, 10)
-        self.elements[0].blink_rate = blinking_rate
-        self.elements[1].blink_rate = blinking_rate
-
-    def track(self):
-        # Always tracking the face at 0
-        face_result = self.face_tracker.get_objects()[0]
-        if face_result.get_bbox_list():
-            bbox = face_result.get_bbox_list()[0]
-            center = (bbox[0] + bbox[2] // 2, (bbox[1] + bbox[3] // 2))
-            center = self.transform_to_screen_coordinates(center)
-            self.set_elems_pos(center)
-
-    def transform_to_screen_coordinates(self, center):
-        # Transform coordinates from camera to screen and invert x-axis
-        camera_x, camera_y = center
-        inverted_camera_x = 640 - camera_x
-        screen_x = int(inverted_camera_x * self.FACE_SURFACE[0] / 640)
-        screen_y = int(camera_y * self.FACE_SURFACE[1] / 480)
-        return screen_x, screen_y
-
-    def draw(self, screen: pygame.Surface):
-        self.face_surface.fill(screen.get_at((0, 0)))  # Limpia la superficie a baja resolución
-        for elem in self.elements:
-            elem.draw(self.face_surface)
-        # Escalar la superficie a la resolución original
-        reduced = pygame.transform.scale(self.face_surface, self.REDUCED_FACE_SURFACE)
-        normal_again = pygame.transform.scale(reduced, self.FACE_SURFACE)
-        screen.blit(normal_again, (0, 0))
+    def __init__(self):
+        self.face_surface = pygame.Surface(self.FACE_SIZE)
+        self.size = self.FACE_SIZE
+        self.size_factor = self.SIZE_FACTOR
+        self.size_step = self.SIZE_STEP
+        self.speed = self.SPEED
+        self.speed_step = self.SPEED_STEP
+        self.position = self.INIT_POSITION
+        self.set_size()
 
     def handle_event(self, event):
-        for elem in self.elements:
-            elem.handle_event(event)
+        pass
 
-    def handle_input(self):
-        for elem in self.elements:
-            elem.handle_input(step=self.MOVE_STEP)
+    def draw(self, display):
+        self.face_surface = pygame.Surface(self.size)
+        display.blit(self.face_surface, self.position)
 
-    def set_elems_pos(self, pos):
-        distance_to_mouth = 50
-        for elem in self.elements:
-            if elem.name == 'mouth':
-                elem.set_position((pos[0], pos[1] + distance_to_mouth))
-            elif elem.name == 'left':
-                elem.set_position((pos[0] - distance_to_mouth, pos[1]))
-            elif elem.name == 'right':
-                elem.set_position((pos[0] + self.DISTANCE_BETWEEN_EYES + distance_to_mouth, pos[1]))
+    def update(self):
+        self.handle_inputs()
 
-    def follow_mouse(self):
-        pos = pygame.mouse.get_pos()
-        self.set_elems_pos(pos)
+    def handle_inputs(self):
+        keys = pygame.key.get_pressed()
+        self.factors(keys)
+        self.teleop(keys)
 
+    def factors(self, keys):
+        if keys[pygame.K_w]:
+            self.set_size(self.size_factor - self.size_step)
+        if keys[pygame.K_s]:
+            self.set_size(self.size_factor + self.size_step)
+        if keys[pygame.K_d]:
+            self.set_speed(self.speed + self.speed_step)
+        if keys[pygame.K_a]:
+            self.set_speed(self.speed - self.speed_step)
 
-if __name__ == '__main__':
-    elements = [HeWoFace(enable_follow_mouse=False)]
-    sandbox = SandBox(elements)
-    sandbox.run()
+    def set_speed(self, speed):
+        self.speed = speed
+        if self.speed < 0:
+            self.speed = 0
+        print('speed', self.speed)
+
+    def set_size(self, size_factor=1):
+        self.size_factor = size_factor
+        if self.size_factor < 0.1:
+            self.size_factor = 0.1
+        heart = self.HEART * self.size_factor
+        self.size = [
+            self.face['width'] / heart,
+            self.face['height'] / heart
+        ]
+        if self.size[0] > self.MAX_SIZE[0]:
+            self.size = self.MAX_SIZE
+        if self.size[1] > self.MAX_SIZE[1]:
+            self.size = self.MAX_SIZE
+        print('size', self.size)
+        print('factor', self.size_factor)
+
+    def teleop(self, keys):
+        position = self.position
+        if keys[pygame.K_LEFT]:
+            position[0] -= self.speed
+        if keys[pygame.K_RIGHT]:
+            position[0] += self.speed
+        if keys[pygame.K_UP]:
+            position[1] -= self.speed
+        if keys[pygame.K_DOWN]:
+            position[1] += self.speed
+        self.set_position(position)
+
+    def set_position(self, position):
+        self.position = position
+        if self.position[0] < 0:
+            self.position[0] = 0
+        if self.position[0] + self.size[0] > self.MAX_SIZE[0]:
+            self.position[0] = self.MAX_SIZE[0] - self.size[0]
+        if self.position[1] < 0:
+            self.position[1] = 0
+        if self.position[1] + self.size[1] > self.MAX_SIZE[1]:
+            self.position[1] = self.MAX_SIZE[1] - self.size[1]

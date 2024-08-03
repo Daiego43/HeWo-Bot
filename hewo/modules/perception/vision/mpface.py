@@ -23,6 +23,7 @@ class MediaPeopleFaces:
         self.detector_results = None
         self.bbox_list = []
         self.face_list = []
+        self.face_connections = mp_face_mesh.FACEMESH_TESSELATION
 
     def get_bbox_list(self):
         return self.bbox_list

@@ -1,0 +1,17 @@
+name: default_hewo_face
+position:
+  x: 0
+  y: 0
+width: 960
+height: 640
+color:
+  r: 0
+  g: 0
+  b: 0
+size_factor: 1
+size_step: 0.1
+speed: 1
+speed_step: 1
+
+
+
