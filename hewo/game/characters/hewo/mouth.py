@@ -1,6 +1,6 @@
 import pygame
 import math
-from hewo.game_elements.scenes.sandbox import SandBox
+from hewo.game.scenes.sandbox import SandBox
 
 
 class HeWoMouth:
@@ -59,7 +59,7 @@ class HeWoMouth:
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                self.toggle_mouth_state()
+                self.toggle_talk()
             if event.key == pygame.K_q:
                 self.mouth_state = self.MOUTHS[0]
             if event.key == pygame.K_w:
@@ -67,12 +67,11 @@ class HeWoMouth:
             if event.key == pygame.K_e:
                 self.mouth_state = self.MOUTHS[2]
 
-
-    def toggle_mouth_state(self):
-        self.mouth_state = self.MOUTHS[self.mouth_i]
-        self.mouth_i += 1
-        if self.mouth_i >= len(self.MOUTHS):
-            self.mouth_i = 0
+    def toggle_talk(self):
+        if self.mouth_state == self.MOUTHS[1]:
+            self.mouth_state = self.MOUTHS[0]
+        else:
+            self.mouth_state = self.MOUTHS[1]
 
     def get_position(self):
         return self.position

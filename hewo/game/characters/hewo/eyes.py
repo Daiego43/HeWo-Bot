@@ -1,6 +1,6 @@
 import pygame
 import random
-from hewo.game_elements.scenes.sandbox import SandBox
+from hewo.game.scenes.sandbox import SandBox
 
 
 class HeWoEye:
