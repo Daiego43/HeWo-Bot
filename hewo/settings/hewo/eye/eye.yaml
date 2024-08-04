@@ -1,0 +1,10 @@
+pupil:
+  color:
+    r: 231
+    g: 210
+    b: 146
+up_brow:
+  color:
+    r: 0
+    g: 210
+    b: 0

@@ -9,7 +9,7 @@ TRACKING = False
 
 if __name__ == '__main__':
     elements = [
-        HewoFace()
+        HewoFace(),
     ]
     sandbox = SandBox(elements, fullscreen=FULLSCREEN)
     sandbox.run()

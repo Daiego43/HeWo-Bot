@@ -5,7 +5,7 @@ position:
 width: 960
 height: 640
 color:
-  r: 0
+  r: 100
   g: 0
   b: 0
 size_factor: 1

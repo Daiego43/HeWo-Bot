@@ -7,6 +7,7 @@ file to store game properties.
 import pygame
 import math
 from hewo.settings.settings_loader import SettingsLoader
+from hewo.game.characters.hewo.eye import Eye
 
 LOADER = SettingsLoader()
 
@@ -14,7 +15,7 @@ LOADER = SettingsLoader()
 class HewoFace:
     face = LOADER.load_settings('hewo.settings.hewo.face')
 
-    HEART = (1 + math.sqrt(5))
+    HEART = phi = (1 + math.sqrt(5)) / 2
     MAX_SIZE = [face['width'],
                 face['height']]
     FACE_SIZE = [face['width'] / HEART,
@@ -37,6 +38,9 @@ class HewoFace:
         self.speed = self.SPEED
         self.speed_step = self.SPEED_STEP
         self.position = self.INIT_POSITION
+        self.face_elems = [
+            Eye()
+        ]
         self.set_size()
 
     def handle_event(self, event):
@@ -44,10 +48,15 @@ class HewoFace:
 
     def draw(self, display):
         self.face_surface = pygame.Surface(self.size)
+        self.face_surface.fill(self.FACE_COLOR)
+        for elem in self.face_elems:
+            elem.draw(self.face_surface)
         display.blit(self.face_surface, self.position)
 
     def update(self):
         self.handle_inputs()
+        for elem in self.face_elems:
+            elem.update()
 
     def handle_inputs(self):
         keys = pygame.key.get_pressed()
@@ -83,8 +92,23 @@ class HewoFace:
             self.size = self.MAX_SIZE
         if self.size[1] > self.MAX_SIZE[1]:
             self.size = self.MAX_SIZE
-        print('size', self.size)
-        print('factor', self.size_factor)
+
+        # Set up the elements positions and sizes
+        self.face_setup()
+
+    def face_setup(self):
+        a, b = self.size[0], self.size[1]
+        bit = a / 5
+        bop = b / 5
+        sizes = [
+            (bit, bop * 4)
+        ]
+        poses = [
+            (0, 0)
+        ]
+        for i, elem in enumerate(self.face_elems):
+            elem.set_size(sizes[i])
+            elem.set_position(poses[i])
 
     def teleop(self, keys):
         position = self.position
