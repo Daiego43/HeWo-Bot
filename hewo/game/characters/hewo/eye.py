@@ -1,5 +1,6 @@
 import pygame
 from hewo.settings.settings_loader import SettingsLoader
+from hewo.game.scenes.sandbox import SandBox
 
 eye_settings = SettingsLoader().load_settings("settings.hewo.eye")
 
@@ -28,36 +29,29 @@ class Pupil:
         pass
 
     def draw(self, surface):
-        pygame.draw.ellipse(surface, self.color, (self.position[0], self.position[1], self.size[0], self.size[1]))
+        pygame.draw.ellipse(surface, self.color, (0, 0, self.size[0], self.size[1]))
 
 
-class EyeBrow:
-    COLOR = (0, 100, 0)
+class EyeLash:
+    lash_settings = eye_settings['lash']
+    COLOR = (
+        lash_settings['color']['r'],
+        lash_settings['color']['g'],
+        lash_settings['color']['b'])
 
     def __init__(self, size, position, flip=False):
         self.size = size
         self.position = position
         self.color = self.COLOR
         self.flip = flip
-        self.vertices = [
-            (self.position[0], self.position[1]),
-            (self.position[0] + self.size[0], self.position[1]),
-            (self.size[0], self.position[1] + self.size[1]),
-            (self.position[0] + self.size[0] // 2, self.position[1] + self.size[1]),
-            (self.position[0], self.position[1] + self.size[1])
-        ]
-        self.emotion_vertices = [
-            [self.size[0], self.position[1] + self.size[1]],
-            [self.position[0] + self.size[0] // 2, self.position[1] + self.size[1]],
-            [self.position[0], self.position[1] + self.size[1]]
-        ]
         self.max_emotion = self.size[1]
         self.emotion = [0, 0, 0]
         self.emotion_pcts = [0.0, 0.0, 0.0]
+        self.update_vertices()
 
     def update(self):
         self.handle_input()
-        self.max_emotion = self.size[1]
+        self.update_vertices()
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -76,13 +70,12 @@ class EyeBrow:
             pcts[2] -= 0.1
         self.set_emotion_by_pct(pcts)
 
-    def set_vertices(self, emotion_pcts):
-        self.set_emotion_by_pct(emotion_pcts)
+    def update_vertices(self):
         if self.flip:
             self.vertices = [
                 (self.position[0], self.position[1] + self.size[1]),
                 (self.position[0] + self.size[0], self.position[1] + self.size[1]),
-                (self.size[0], self.position[1] + self.size[1] - self.emotion[2]),
+                (self.position[0] + self.size[0], self.position[1] + self.size[1] - self.emotion[2]),
                 (self.position[0] + self.size[0] // 2, self.position[1] + self.size[1] - self.emotion[1]),
                 (self.position[0], self.position[1] + self.size[1] - self.emotion[0])
             ]
@@ -90,70 +83,77 @@ class EyeBrow:
             self.vertices = [
                 (self.position[0], self.position[1]),
                 (self.position[0] + self.size[0], self.position[1]),
-                (self.size[0], self.emotion[2]),
-                (self.position[0] + self.size[0] // 2, self.emotion[1]),
-                (self.position[0], self.emotion[0])
+                (self.position[0] + self.size[0], self.position[1] + self.emotion[2]),
+                (self.position[0] + self.size[0] // 2, self.position[1] + self.emotion[1]),
+                (self.position[0], self.position[1] + self.emotion[0])
             ]
 
     def set_emotion_by_pct(self, emotion_pcts):
         for i, p in enumerate(emotion_pcts):
             self.emotion_pcts[i] = min(max(p, 0.0), 1.0)
             self.emotion[i] = self.max_emotion * self.emotion_pcts[i]
+        self.update_vertices()
 
     def set_size(self, size):
         self.size = size
+        self.update_vertices()
 
     def set_position(self, position):
         self.position = position
+        self.update_vertices()
 
     def draw(self, surface):
-        self.set_vertices(self.emotion_pcts)
-        seq = self.vertices
-        pygame.draw.polygon(surface, self.color, seq)
+        pygame.draw.polygon(surface, self.color, self.vertices)
 
     def handle_event(self, event):
         pass
 
 
 class Eye:
-    def __init__(self, size=(0, 0), position=(0, 0)):
+    COLOR = (
+        eye_settings['canvas']['color']['r'],
+        eye_settings['canvas']['color']['g'],
+        eye_settings['canvas']['color']['b']
+    )
+
+    def __init__(self, size, position):
         self.size = size
         self.position = position
-        self.pupil = Pupil(self.size, self.position)
-        self.up_brow = EyeBrow(self.size, self.position)
-        self.down_brow = EyeBrow(self.size, self.position, flip=True)
-        self.set_size(size)
-        self.set_position(position)
-
-    def update(self):
-        self.up_brow.update()
-        self.down_brow.update()
-
-    def set_size(self, size):
-        self.size = size
-        self.pupil.set_size(size)
-        brow_size = (size[0], size[1] // 2)
-        self.up_brow.set_size(brow_size)
-        self.up_brow.color = (200, 0, 0)  # Color del párpado superior
-        self.down_brow.set_size(brow_size)
-        self.down_brow.color = (0, 200, 0)  # Color del párpado inferior
-
-    def set_position(self, position):
-        self.position = position
-        self.up_brow.set_position(self.position)
-        self.pupil.set_position(self.position)
-        down_pos = (position[0], position[1] + self.size[1] // 2)
-        self.down_brow.set_position(down_pos)
-
-    def get_size(self):
-        return self.size
+        self.lash_size = (self.size[0], self.size[1] / 2)
+        self.top_pos = (0, 0)
+        self.bottom_pos = (0, self.size[1] // 2)
+        self.elements = [
+            Pupil(size=self.size, position=self.position),
+            EyeLash(size=self.lash_size, position=self.top_pos),
+            EyeLash(size=self.lash_size, position=self.bottom_pos, flip=True)
+        ]
+        self.eye_surface = pygame.Surface(self.size)
 
     def handle_event(self, event):
-        self.pupil.handle_event(event)
-        self.up_brow.handle_event(event)
-        self.down_brow.handle_event(event)
+        for elem in self.elements:
+            elem.handle_event(event)
 
     def draw(self, surface):
-        self.pupil.draw(surface)
-        self.up_brow.draw(surface)
-        self.down_brow.draw(surface)
+        self.eye_surface = pygame.surface.Surface(self.size)
+        self.eye_surface.fill(self.COLOR)
+        for elem in self.elements:
+            elem.draw(self.eye_surface)
+        surface.blit(self.eye_surface, self.position)
+
+    def update(self):
+        for elem in self.elements:
+            elem.update()
+
+
+if __name__ == '__main__':
+    size = (960, 640)
+    position = (0, 0)
+
+    eye_size = (size[0] / 5, size[1] / 5 * 4)
+    l_pos = position
+    r_pos = (position[0] + size[0] / 5 * 4, 0)
+    elements = [
+        Eye(eye_size, l_pos),
+    ]
+    sandbox = SandBox(elements=elements)
+    sandbox.run()
