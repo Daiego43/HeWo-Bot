@@ -1,4 +1,6 @@
 import pygame
+import numpy as np
+from scipy.interpolate import make_interp_spline
 from hewo.settings.settings_loader import SettingsLoader
 from hewo.game.scenes.sandbox import SandBox
 
@@ -39,74 +41,61 @@ class EyeLash:
         lash_settings['color']['g'],
         lash_settings['color']['b'])
 
-    def __init__(self, size, position, flip=False):
+    def __init__(self, size, position, color=COLOR, init_pcts=[0, 0, 0], flip=False):
         self.size = size
         self.position = position
-        self.color = self.COLOR
-        self.flip = flip
+        self.color = color
         self.max_emotion = self.size[1]
-        self.emotion = [0, 0, 0]
-        self.emotion_pcts = [0.0, 0.0, 0.0]
-        self.update_vertices()
-
-    def update(self):
-        self.handle_input()
-        self.update_vertices()
-
-    def handle_input(self):
-        keys = pygame.key.get_pressed()
-        pcts = self.emotion_pcts.copy()
-        if keys[pygame.K_u]:
-            pcts[0] += 0.1
-        if keys[pygame.K_j]:
-            pcts[0] -= 0.1
-        if keys[pygame.K_i]:
-            pcts[1] += 0.1
-        if keys[pygame.K_k]:
-            pcts[1] -= 0.1
-        if keys[pygame.K_o]:
-            pcts[2] += 0.1
-        if keys[pygame.K_l]:
-            pcts[2] -= 0.1
-        self.set_emotion_by_pct(pcts)
-
-    def update_vertices(self):
-        if self.flip:
-            self.vertices = [
-                (self.position[0], self.position[1] + self.size[1]),
-                (self.position[0] + self.size[0], self.position[1] + self.size[1]),
-                (self.position[0] + self.size[0], self.position[1] + self.size[1] - self.emotion[2]),
-                (self.position[0] + self.size[0] // 2, self.position[1] + self.size[1] - self.emotion[1]),
-                (self.position[0], self.position[1] + self.size[1] - self.emotion[0])
-            ]
-        else:
-            self.vertices = [
-                (self.position[0], self.position[1]),
-                (self.position[0] + self.size[0], self.position[1]),
-                (self.position[0] + self.size[0], self.position[1] + self.emotion[2]),
-                (self.position[0] + self.size[0] // 2, self.position[1] + self.emotion[1]),
-                (self.position[0], self.position[1] + self.emotion[0])
-            ]
-
-    def set_emotion_by_pct(self, emotion_pcts):
-        for i, p in enumerate(emotion_pcts):
-            self.emotion_pcts[i] = min(max(p, 0.0), 1.0)
-            self.emotion[i] = self.max_emotion * self.emotion_pcts[i]
-        self.update_vertices()
-
-    def set_size(self, size):
-        self.size = size
-        self.update_vertices()
-
-    def set_position(self, position):
-        self.position = position
-        self.update_vertices()
-
-    def draw(self, surface):
-        pygame.draw.polygon(surface, self.color, self.vertices)
+        self.emotion_pcts = init_pcts
+        x, y = position
+        w, h = size
+        self.polygon_points = [
+            [0 + x, 0 + y],
+            [0 + x, h + y],
+            [w / 2 + x, h + y],
+            [w + x, h + y],
+            [w + x, 0 + y],
+            [w / 2 + x, 0 + y]
+        ]
+        self.flip = flip
+        self.set_points_by_pct(init_pcts)
 
     def handle_event(self, event):
         pass
+
+    def update(self):
+        pass
+
+    def set_points_by_pct(self, emotion):
+        self.set_emotion_pcts(emotion)
+        indices = [1, 2, 3]
+        if self.flip:
+            self.emotion_pcts = [100 - e for e in self.emotion_pcts]
+            indices = [0, 5, 4]
+
+        for i, tup in enumerate(zip(indices, self.emotion_pcts)):
+            self.polygon_points[tup[0]][1] = self.position[1] + self.size[1] * (tup[1] / 100)
+
+    def draw(self, surface):
+        points = self.polygon_points[1:4]
+        if self.flip:
+            points = [self.polygon_points[0], self.polygon_points[5], self.polygon_points[4]]
+        ############################
+        x_points = np.array([p[0] for p in points])
+        y_points = np.array([p[1] for p in points])
+        spline = make_interp_spline(x_points, y_points, k=2)
+        x_range = np.linspace(min(x_points), max(x_points), 500)
+        interpolated_points = [(int(x), int(spline(x))) for x in x_range]
+        ############################
+        polygon = [self.polygon_points[0]] + interpolated_points + self.polygon_points[4:]
+        if self.flip:
+            interpolated_points.reverse()
+            polygon = self.polygon_points[1:4] + interpolated_points
+        pygame.draw.polygon(surface, self.color, polygon)
+
+    def set_emotion_pcts(self, emotion):
+        for i, e in enumerate(emotion):
+            self.emotion_pcts[i] = max(0, min(e, 100))
 
 
 class Eye:
@@ -120,12 +109,14 @@ class Eye:
         self.size = size
         self.position = position
         self.lash_size = (self.size[0], self.size[1] / 2)
-        self.top_pos = (0, 0)
-        self.bottom_pos = (0, self.size[1] // 2)
+        self.t_pos = (0, 0)
+        self.b_pos = (0, self.size[1] / 2)
+        self.t_emotion = [0, 0, 0]
+        self.b_emotion = [0, 0, 0]
         self.elements = [
             Pupil(size=self.size, position=self.position),
-            EyeLash(size=self.lash_size, position=self.top_pos),
-            EyeLash(size=self.lash_size, position=self.bottom_pos, flip=True)
+            EyeLash(size=self.lash_size, position=self.t_pos, color=[255, 0, 0]),
+            EyeLash(size=self.lash_size, position=self.b_pos, color=[0, 255, 0], flip=True)
         ]
         self.eye_surface = pygame.Surface(self.size)
 
@@ -141,8 +132,32 @@ class Eye:
         surface.blit(self.eye_surface, self.position)
 
     def update(self):
+        self.handle_input()
         for elem in self.elements:
             elem.update()
+
+    def handle_input(self):
+        keys = pygame.key.get_pressed()
+        emotion = self.t_emotion
+
+        def adjust_value(key_increase, key_decrease, value, step=10):
+            if keys[key_increase]:
+                value -= step
+            if keys[key_decrease]:
+                value += step
+            return value
+
+        emotion[2] = adjust_value(pygame.K_p, pygame.K_SEMICOLON, emotion[2])
+        emotion[1] = adjust_value(pygame.K_o, pygame.K_l, emotion[1])
+        emotion[0] = adjust_value(pygame.K_i, pygame.K_k, emotion[0])
+        self.set_emotion_pct(emotion)
+        self.elements[1].set_points_by_pct(self.t_emotion)
+        self.elements[2].set_points_by_pct(self.b_emotion)
+
+    def set_emotion_pct(self, emotion):
+        for i, e in enumerate(emotion):
+            self.t_emotion[i] = max(0, min(e, 100))
+            self.b_emotion[i] = max(0, min(e, 100))
 
 
 if __name__ == '__main__':

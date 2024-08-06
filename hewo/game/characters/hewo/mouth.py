@@ -71,16 +71,6 @@ class Mouth:
         self.handle_input()
 
     def handle_input(self):
-        """
-        Mouth controls
-        Up and Down lip indices [0] and [2] always share position
-        q/a -> increase and decrease left position
-        r/f -> inc/dec right position
-        w/s -> inc/dec up lip center
-        e/d -> inc/dec down lip center
-        :return:
-        """
-
         def adjust_value(key_increase, key_decrease, value, step=10):
             if keys[key_increase]:
                 value -= step
@@ -96,7 +86,6 @@ class Mouth:
         up[1] = adjust_value(pygame.K_w, pygame.K_s, up[1])
         down[1] = adjust_value(pygame.K_e, pygame.K_d, down[1])
         up[2] = down[2] = adjust_value(pygame.K_r, pygame.K_f, up[2])
-        # Don't letting the down lip go up
         down[1] = max(up[1], min(down[1], self.size[1]))
 
         self.lips[0].set_increments(up)

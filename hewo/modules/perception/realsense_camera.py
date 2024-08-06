@@ -19,7 +19,7 @@ class RealSenseCamera:
         print("Config:", self.config)
         self.width = 640
         self.height = 480
-        self.fps = 30
+        self.fps = 60
         self.config.enable_stream(rs.stream.depth, self.width, self.height, rs.format.z16, self.fps)
         self.config.enable_stream(rs.stream.color, self.width, self.height, rs.format.bgr8, self.fps)
         self.objects = objects
@@ -84,4 +84,4 @@ class RealSenseCamera:
 if __name__ == '__main__':
     people = MediaPeople()
     camera = RealSenseCamera([people])
-    camera.init_capture(cv_rpr=True)
+    camera.viewer(cv_rpr=True)
