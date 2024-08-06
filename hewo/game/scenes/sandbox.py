@@ -70,7 +70,7 @@ class SandBox:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_1:
                     if self.HEWO_DISPLAY != 0:
                         self.toggle_fullscreen()
                 if event.key == pygame.K_ESCAPE:

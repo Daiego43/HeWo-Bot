@@ -1,5 +1,6 @@
 from hewo.game.scenes.sandbox import SandBox
 from hewo.game.characters.hewo.eye import Eye
+from hewo.game.characters.hewo.mouth import Mouth
 from hewo.settings.settings_loader import SettingsLoader
 
 LOADER = SettingsLoader().load_settings('hewo.settings.game')
@@ -10,18 +11,16 @@ TRACKING = False
 if __name__ == '__main__':
     size = (960, 640)
     pos = [0, 0]
-    eye_size = (size[0] / 5, size[1] / 5 * 4)
-
+    e_size = (size[0] / 5, size[1] / 5 * 4)
+    m_size = (size[0] / 5 * 3, size[1] / 5)
     l_pos = pos
-    r_pos = [eye_size[0] * 4, 0]
+    r_pos = [e_size[0] * 4, 0]
 
-    elements = []
-    for i in range(5):
-        eye = Eye(eye_size, (eye_size[0] * i, 0))
-        elements.append(eye)
+    m_pos = [e_size[0], e_size[1]]
     elements = [
-        Eye(eye_size, l_pos),
-        Eye(eye_size, r_pos)
+        Eye(e_size, l_pos),
+        Eye(e_size, r_pos),
+        Mouth(m_size, m_pos)
     ]
     sandbox = SandBox(elements, fullscreen=FULLSCREEN)
     sandbox.run()
