@@ -8,8 +8,11 @@ import importlib.util
 
 
 class SettingsLoader:
-    def __init__(self):
+    def __init__(self, module_name=None):
+        self.settings_path = None
         self.settings = {}
+        if module_name is not None:
+            self.load_settings(module_name)
 
     def load_settings(self, module_name):
         module = importlib.import_module(module_name)
@@ -22,11 +25,16 @@ class SettingsLoader:
             with open(setting_file, 'r') as file:
                 settings = yaml.load(file, Loader=yaml.FullLoader)
                 self.settings.update(settings)
+                self.settings_path = setting_file
 
         return self.settings
 
     def pretty_print(self):
         print(yaml.dump(self.settings, default_flow_style=False, sort_keys=False, allow_unicode=True))
+
+    def save_settings(self, settings):
+        with open(self.settings_path, 'w') as file:
+            yaml.dump(settings, file, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
 
 if __name__ == '__main__':

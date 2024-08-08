@@ -1,6 +1,10 @@
 import pygame
 import numpy as np
 from scipy.interpolate import make_interp_spline
+from settings.settings_loader import SettingsLoader
+
+settings = SettingsLoader().load_settings("settings.hewo")
+mouth = settings['elements']['mouth']
 
 
 class Lip:
@@ -48,23 +52,37 @@ class Lip:
 
 
 class Mouth:
-    point_elevation = 0
+    COLOR = (
+        mouth['surface']['color']['r'],
+        mouth['surface']['color']['g'],
+        mouth['surface']['color']['b']
+    )
+    TOP_LIP = (
+        mouth['elements']['top_lip']['color']['r'],
+        mouth['elements']['top_lip']['color']['g'],
+        mouth['elements']['top_lip']['color']['b']
+    )
+    BOT_LIP = (
+        mouth['elements']['bot_lip']['color']['r'],
+        mouth['elements']['bot_lip']['color']['g'],
+        mouth['elements']['bot_lip']['color']['b']
+    )
 
-    def __init__(self, size, position):
+    def __init__(self, size, position, color=COLOR):
         self.size = size
         self.position = position
         self.surface = pygame.Surface(self.size)
-        self.up_lip_values = [0, 0, 0]
-        self.down_lip_values = [0, 0, 0]
-        self.lips = [
-            Lip(self.size, self.position, (0, 255, 0)),
-            Lip(self.size, self.position, (255, 0, 0))
-        ]
+        self.color = color
+
+        self.top_lip_emotion = [0, 0, 0]
+        self.bot_lip_emotion = [0, 0, 0]
+        self.top_lip = Lip(self.size, self.position, self.TOP_LIP)
+        self.bot_lip = Lip(self.size, self.position, self.BOT_LIP)
 
     def draw(self, surface):
-        self.surface.fill((0, 0, 255))
-        for lip in self.lips:
-            lip.draw(self.surface)
+        self.surface.fill(self.color)
+        self.top_lip.draw(self.surface)
+        self.bot_lip.draw(self.surface)
         surface.blit(self.surface, self.position)
 
     def update(self):
@@ -79,17 +97,17 @@ class Mouth:
             return value
 
         keys = pygame.key.get_pressed()
-        up = self.up_lip_values
-        down = self.down_lip_values
+        top = self.top_lip_emotion
+        bot = self.bot_lip_emotion
 
-        up[0] = down[0] = adjust_value(pygame.K_q, pygame.K_a, up[0])
-        up[1] = adjust_value(pygame.K_w, pygame.K_s, up[1])
-        down[1] = adjust_value(pygame.K_e, pygame.K_d, down[1])
-        up[2] = down[2] = adjust_value(pygame.K_r, pygame.K_f, up[2])
-        down[1] = max(up[1], min(down[1], self.size[1]))
+        top[0] = bot[0] = adjust_value(pygame.K_q, pygame.K_a, top[0])
+        top[1] = adjust_value(pygame.K_w, pygame.K_s, top[1])
+        bot[1] = adjust_value(pygame.K_e, pygame.K_d, bot[1])
+        top[2] = bot[2] = adjust_value(pygame.K_r, pygame.K_f, top[2])
+        bot[1] = max(top[1], min(bot[1], self.size[1]))
 
-        self.lips[0].set_increments(up)
-        self.lips[1].set_increments(down)
+        self.top_lip.set_increments(top)
+        self.bot_lip.set_increments(bot)
 
     def handle_event(self, event):
         pass

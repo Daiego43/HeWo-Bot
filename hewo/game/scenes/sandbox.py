@@ -4,11 +4,10 @@ import os
 import sys
 from hewo.settings.settings_loader import SettingsLoader
 
-SETTINGS = SettingsLoader().load_settings('hewo.settings.game')
+display = SettingsLoader().load_settings('settings.display')
 
 
 class SandBox:
-    display = SETTINGS['game']['display']
     WINDOW_SIZE = (
         display['width'],
         display['height']

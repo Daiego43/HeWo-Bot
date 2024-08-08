@@ -2,9 +2,10 @@ import pygame
 import numpy as np
 from scipy.interpolate import make_interp_spline
 from hewo.settings.settings_loader import SettingsLoader
-from hewo.game.scenes.sandbox import SandBox
 
-eye_settings = SettingsLoader().load_settings("settings.hewo.eye")
+settings = SettingsLoader().load_settings("settings.hewo")
+
+eye_settings = settings['elements']['left_eye']['elements']
 
 
 class Pupil:
@@ -13,10 +14,10 @@ class Pupil:
              pupil["color"]["g"],
              pupil["color"]["b"])
 
-    def __init__(self, size, position):
+    def __init__(self, size, position, color=COLOR):
         self.size = size
         self.position = position
-        self.color = self.COLOR
+        self.color = color
 
     def update(self):
         pass
@@ -35,11 +36,12 @@ class Pupil:
 
 
 class EyeLash:
-    lash_settings = eye_settings['lash']
+    lash_settings = eye_settings['top_lash']
     COLOR = (
         lash_settings['color']['r'],
         lash_settings['color']['g'],
-        lash_settings['color']['b'])
+        lash_settings['color']['b']
+    )
 
     def __init__(self, size, position, color=COLOR, init_pcts=[0, 0, 0], flip=False):
         self.size = size
@@ -99,10 +101,11 @@ class EyeLash:
 
 
 class Eye:
-    COLOR = (
-        eye_settings['canvas']['color']['r'],
-        eye_settings['canvas']['color']['g'],
-        eye_settings['canvas']['color']['b']
+    surface = settings['elements']['left_eye']['surface']
+    SURFACE_COLOR = (
+        surface['color']['r'],
+        surface['color']['g'],
+        surface['color']['b']
     )
 
     def __init__(self, size, position):
@@ -113,28 +116,31 @@ class Eye:
         self.b_pos = (0, self.size[1] / 2)
         self.t_emotion = [0, 0, 0]
         self.b_emotion = [0, 0, 0]
-        self.elements = [
-            Pupil(size=self.size, position=self.position),
-            EyeLash(size=self.lash_size, position=self.t_pos, color=[255, 0, 0]),
-            EyeLash(size=self.lash_size, position=self.b_pos, color=[0, 255, 0], flip=True)
-        ]
+
+        self.top_lash = EyeLash(size=self.lash_size, position=self.t_pos)
+        self.pupil = Pupil(size=self.size, position=self.position)
+        self.bot_lash = EyeLash(size=self.lash_size, position=self.b_pos, flip=True)
+
         self.eye_surface = pygame.Surface(self.size)
 
     def handle_event(self, event):
-        for elem in self.elements:
-            elem.handle_event(event)
+        self.top_lash.handle_event(event)
+        self.pupil.handle_event(event)
+        self.bot_lash.handle_event(event)
 
     def draw(self, surface):
         self.eye_surface = pygame.surface.Surface(self.size)
-        self.eye_surface.fill(self.COLOR)
-        for elem in self.elements:
-            elem.draw(self.eye_surface)
+        self.eye_surface.fill(self.SURFACE_COLOR)
+        self.pupil.draw(self.eye_surface)
+        self.top_lash.draw(self.eye_surface)
+        self.bot_lash.draw(self.eye_surface)
         surface.blit(self.eye_surface, self.position)
 
     def update(self):
         self.handle_input()
-        for elem in self.elements:
-            elem.update()
+        self.top_lash.update()
+        self.pupil.update()
+        self.bot_lash.update()
 
     def handle_input(self):
         keys = pygame.key.get_pressed()
@@ -151,24 +157,10 @@ class Eye:
         emotion[1] = adjust_value(pygame.K_o, pygame.K_l, emotion[1])
         emotion[0] = adjust_value(pygame.K_i, pygame.K_k, emotion[0])
         self.set_emotion_pct(emotion)
-        self.elements[1].set_points_by_pct(self.t_emotion)
-        self.elements[2].set_points_by_pct(self.b_emotion)
+        self.top_lash.set_points_by_pct(self.t_emotion)
+        self.bot_lash.set_points_by_pct(self.b_emotion)
 
     def set_emotion_pct(self, emotion):
         for i, e in enumerate(emotion):
             self.t_emotion[i] = max(0, min(e, 100))
             self.b_emotion[i] = max(0, min(e, 100))
-
-
-if __name__ == '__main__':
-    size = (960, 640)
-    position = (0, 0)
-
-    eye_size = (size[0] / 5, size[1] / 5 * 4)
-    l_pos = position
-    r_pos = (position[0] + size[0] / 5 * 4, 0)
-    elements = [
-        Eye(eye_size, l_pos),
-    ]
-    sandbox = SandBox(elements=elements)
-    sandbox.run()
