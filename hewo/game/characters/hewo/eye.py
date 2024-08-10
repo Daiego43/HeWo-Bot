@@ -108,14 +108,14 @@ class Eye:
         surface['color']['b']
     )
 
-    def __init__(self, size, position):
+    def __init__(self, size, position, init_emotion=[[0, 0, 0], [0, 0, 0]]):
         self.size = size
         self.position = position
         self.lash_size = (self.size[0], self.size[1] / 2)
         self.t_pos = (0, 0)
         self.b_pos = (0, self.size[1] / 2)
-        self.t_emotion = [0, 0, 0]
-        self.b_emotion = [0, 0, 0]
+        self.t_emotion = init_emotion[0]
+        self.b_emotion = init_emotion[1]
 
         self.top_lash = EyeLash(size=self.lash_size, position=self.t_pos)
         self.pupil = Pupil(size=self.size, position=self.position)
@@ -164,3 +164,6 @@ class Eye:
         for i, e in enumerate(emotion):
             self.t_emotion[i] = max(0, min(e, 100))
             self.b_emotion[i] = max(0, min(e, 100))
+
+    def get_emotion(self):
+        return [self.t_emotion, self.b_emotion]

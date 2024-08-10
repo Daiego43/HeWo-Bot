@@ -68,14 +68,14 @@ class Mouth:
         mouth['elements']['bot_lip']['color']['b']
     )
 
-    def __init__(self, size, position, color=COLOR):
+    def __init__(self, size, position, color=COLOR, init_emotion=[[0, 0, 0], [0, 0, 0]]):
         self.size = size
         self.position = position
         self.surface = pygame.Surface(self.size)
         self.color = color
 
-        self.top_lip_emotion = [0, 0, 0]
-        self.bot_lip_emotion = [0, 0, 0]
+        self.top_lip_emotion = init_emotion[0]
+        self.bot_lip_emotion = init_emotion[1]
         self.top_lip = Lip(self.size, self.position, self.TOP_LIP)
         self.bot_lip = Lip(self.size, self.position, self.BOT_LIP)
 
@@ -87,6 +87,8 @@ class Mouth:
 
     def update(self):
         self.handle_input()
+        self.top_lip.update()
+        self.bot_lip.update()
 
     def handle_input(self):
         def adjust_value(key_increase, key_decrease, value, step=10):
@@ -111,3 +113,6 @@ class Mouth:
 
     def handle_event(self, event):
         pass
+
+    def get_emotion(self):
+        return [self.top_lip_emotion, self.bot_lip_emotion]

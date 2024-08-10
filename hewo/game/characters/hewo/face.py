@@ -16,27 +16,14 @@ class Face:
         settings['surface']['color']['b']
     )
 
-    def __init__(self, position=[0, 0], color=COLOR):
-        self.size = [PHI * 200, 200]
+    def __init__(self, position=None, color=COLOR, factor=350):
+        if position is None:
+            position = [0, 0]
+        self.size = [PHI * factor, factor]
         self.position = position
         self.color = color
         self.face_surface = pygame.surface.Surface(self.size)
 
-        self.eye_size = None
-        self.mouth_size = None
-
-        self.left_eye_pos = None
-        self.right_eye_pos = None
-        self.mouth_pos = None
-
-        self.left_eye = None
-        self.right_eye = None
-        self.mouth = None
-
-        self.set_face_elements()
-
-    def set_face_elements(self):
-        # TODO: Only resize the element, do not create a new one.
         self.face_surface = pygame.surface.Surface(self.size)
         self.eye_size = [self.size[0] / 5, self.size[1] / 5 * 4]
         self.mouth_size = [self.size[0] / 5 * 3, self.size[1] / 5]
@@ -48,10 +35,27 @@ class Face:
         self.left_eye = Eye(self.eye_size, self.left_eye_pos)
         self.right_eye = Eye(self.eye_size, self.right_eye_pos)
         self.mouth = Mouth(self.mouth_size, self.mouth_pos)
+        self.set_face_elements()
+
+    def set_face_elements(self):
+        self.face_surface = pygame.surface.Surface(self.size)
+        self.eye_size = [self.size[0] / 5, self.size[1] / 5 * 4]
+        self.mouth_size = [self.size[0] / 5 * 3, self.size[1] / 5]
+
+        self.left_eye_pos = [0, 0]  # in the canvas
+        self.right_eye_pos = [self.eye_size[0] * 4, 0]
+        self.mouth_pos = [self.eye_size[0], self.eye_size[1]]
+
+        emotion = self.left_eye.get_emotion()
+        self.left_eye = Eye(self.eye_size, self.left_eye_pos, init_emotion=emotion)
+        emotion = self.right_eye.get_emotion()
+        self.right_eye = Eye(self.eye_size, self.right_eye_pos, init_emotion=emotion)
+        emotion = self.mouth.get_emotion()
+        self.mouth = Mouth(self.mouth_size, self.mouth_pos, init_emotion=emotion)
 
     def set_size(self, size):
-        self.size[0] = max(0, min(size[0], self.MAX_SIZE[0]))
-        self.size[1] = max(0, min(size[1], self.MAX_SIZE[1]))
+        self.size[0] = max(PHI, min(size[0], self.MAX_SIZE[0]))
+        self.size[1] = max(1, min(size[1], self.MAX_SIZE[1]))
 
     def set_position(self, pos):
         self.position[0] = max(0, min(pos[0], self.MAX_SIZE[0] - self.size[0]))
@@ -76,7 +80,6 @@ class Face:
         surface.blit(self.face_surface, dest=self.position)
 
     def handle_input(self):
-        # REsinkthislogic
         keys = pygame.key.get_pressed()
         size = self.size.copy()
         ref = size[1]

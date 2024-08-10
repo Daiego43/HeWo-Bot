@@ -8,13 +8,11 @@ display = SettingsLoader().load_settings('settings.display')
 FULLSCREEN = display['fullscreen']
 FOLLOW_MOUSE = False
 TRACKING = False
-
-
-
+pos = [display['width'] / 5, display['height'] / 5]
 
 if __name__ == '__main__':
     elements = [
-        Face()
+        Face(position=pos),
     ]
     sandbox = SandBox(elements, fullscreen=FULLSCREEN)
     sandbox.run()
