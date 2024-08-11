@@ -99,6 +99,13 @@ class EyeLash:
         for i, e in enumerate(emotion):
             self.emotion_pcts[i] = max(0, min(e, 100))
 
+    def get_emotion(self):
+        return self.emotion_pcts
+
+    def set_emotion(self, emotion):
+        self.set_emotion_pcts(emotion)
+        self.set_points_by_pct(emotion)
+
 
 class Eye:
     surface = settings['elements']['left_eye']['surface']
@@ -137,33 +144,13 @@ class Eye:
         surface.blit(self.eye_surface, self.position)
 
     def update(self):
-        self.handle_input()
         self.top_lash.update()
         self.pupil.update()
         self.bot_lash.update()
 
-    def handle_input(self):
-        keys = pygame.key.get_pressed()
-        emotion = self.t_emotion
-
-        def adjust_value(key_increase, key_decrease, value, step=10):
-            if keys[key_increase]:
-                value -= step
-            if keys[key_decrease]:
-                value += step
-            return value
-
-        emotion[2] = adjust_value(pygame.K_p, pygame.K_SEMICOLON, emotion[2])
-        emotion[1] = adjust_value(pygame.K_o, pygame.K_l, emotion[1])
-        emotion[0] = adjust_value(pygame.K_i, pygame.K_k, emotion[0])
-        self.set_emotion_pct(emotion)
-        self.top_lash.set_points_by_pct(self.t_emotion)
-        self.bot_lash.set_points_by_pct(self.b_emotion)
-
-    def set_emotion_pct(self, emotion):
-        for i, e in enumerate(emotion):
-            self.t_emotion[i] = max(0, min(e, 100))
-            self.b_emotion[i] = max(0, min(e, 100))
+    def set_emotion(self, t_emotion, b_emotion):
+        self.top_lash.set_emotion(t_emotion)
+        self.bot_lash.set_emotion(b_emotion)
 
     def get_emotion(self):
-        return [self.t_emotion, self.b_emotion]
+        return self.top_lash.get_emotion(), self.bot_lash.get_emotion()

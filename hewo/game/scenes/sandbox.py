@@ -103,7 +103,7 @@ class SandBox:
                                                   display=self.HEWO_DISPLAY,
                                                   vsync=True)
             self.is_fullscreen = True
-        pygame.display.flip()  # Asegurarse de que la pantalla se actualice inmediatamente
+        pygame.display.flip()
 
     def quit(self):
         pygame.quit()

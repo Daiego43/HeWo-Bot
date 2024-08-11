@@ -62,10 +62,10 @@ class Face:
         self.position[1] = max(0, min(pos[1], self.MAX_SIZE[1] - self.size[1]))
 
     def update(self):
-        self.handle_input()
         self.left_eye.update()
         self.right_eye.update()
         self.mouth.update()
+        self.get_emotion()
 
     def handle_event(self, event):
         self.left_eye.handle_event(event)
@@ -77,31 +77,24 @@ class Face:
         self.left_eye.draw(self.face_surface)
         self.right_eye.draw(self.face_surface)
         self.mouth.draw(self.face_surface)
+        self.face_surface = pygame.transform.scale(self.face_surface, [PHI * 128, 128])
+        self.face_surface = pygame.transform.scale(self.face_surface, self.size)
         surface.blit(self.face_surface, dest=self.position)
 
-    def handle_input(self):
-        keys = pygame.key.get_pressed()
-        size = self.size.copy()
-        ref = size[1]
-        step = 10
-        pos = self.position.copy()
+    def get_emotion(self):
+        print("#" * 20)
+        letl = self.left_eye.top_lash.get_emotion()
+        lebl = self.left_eye.bot_lash.get_emotion()
+        retl = self.right_eye.top_lash.get_emotion()
+        rebl = self.right_eye.bot_lash.get_emotion()
+        tl, bl = self.mouth.get_emotion()
+        print("Left Top Lash:", letl)
+        print("Left Bot Lash:", lebl)
+        print("Right Top Lash:", retl)
+        print("Right Bot Lash:", rebl)
+        print("Mouth Top Lip:", tl)
+        print("Mouth Bot Lip:", bl)
+        return [letl, lebl, retl, rebl, tl, bl]
 
-        if keys[pygame.K_m]:
-            ref += step
-            self.set_size([ref * PHI, ref])
-            self.set_face_elements()
-
-        if keys[pygame.K_n]:
-            ref -= step
-            self.set_size([ref * PHI, ref])
-            self.set_face_elements()
-
-        if keys[pygame.K_UP]:
-            pos[1] -= step
-        if keys[pygame.K_DOWN]:
-            pos[1] += step
-        if keys[pygame.K_LEFT]:
-            pos[0] -= step
-        if keys[pygame.K_RIGHT]:
-            pos[0] += step
-        self.set_position(pos)
+    def set_emotion(self):
+        pass

@@ -8,6 +8,8 @@ mouth = settings['elements']['mouth']
 
 
 class Lip:
+    LIP_WIDTH = 10
+
     def __init__(self, size, position, color):
         self.size = size
         self.position = position
@@ -31,7 +33,7 @@ class Lip:
     def set_y_points(self, y_points):
         for i, val in enumerate(zip(y_points, self.increments)):
             point = val[0] + val[1]
-            clamped_value = max(0, min(point, self.size[1]))
+            clamped_value = max(self.LIP_WIDTH, min(point, self.size[1] - self.LIP_WIDTH))
             y_points[i] = clamped_value
         return y_points
 
@@ -45,7 +47,7 @@ class Lip:
 
     def draw(self, surface):
         points = self.lip_shape()
-        pygame.draw.lines(surface, self.color, False, points, 10)
+        pygame.draw.lines(surface, self.color, False, points, self.LIP_WIDTH)
 
     def handle_event(self, event):
         pass
@@ -86,33 +88,33 @@ class Mouth:
         surface.blit(self.surface, self.position)
 
     def update(self):
-        self.handle_input()
         self.top_lip.update()
         self.bot_lip.update()
-
-    def handle_input(self):
-        def adjust_value(key_increase, key_decrease, value, step=10):
-            if keys[key_increase]:
-                value -= step
-            if keys[key_decrease]:
-                value += step
-            return value
-
-        keys = pygame.key.get_pressed()
-        top = self.top_lip_emotion
-        bot = self.bot_lip_emotion
-
-        top[0] = bot[0] = adjust_value(pygame.K_q, pygame.K_a, top[0])
-        top[1] = adjust_value(pygame.K_w, pygame.K_s, top[1])
-        bot[1] = adjust_value(pygame.K_e, pygame.K_d, bot[1])
-        top[2] = bot[2] = adjust_value(pygame.K_r, pygame.K_f, top[2])
-        bot[1] = max(top[1], min(bot[1], self.size[1]))
-
-        self.top_lip.set_increments(top)
-        self.bot_lip.set_increments(bot)
 
     def handle_event(self, event):
         pass
 
+    def set_emotion(self, top_lip_percentages, bot_lip_percentages):
+        """
+        Set the emotions of the lips using percentage values (0% to 100%).
+        """
+
+        def percentage_to_pixel(value, size):
+            return int(value / 100 * size)
+
+        self.top_lip_emotion = [percentage_to_pixel(val, self.size[1]) for val in top_lip_percentages]
+        self.bot_lip_emotion = [percentage_to_pixel(val, self.size[1]) for val in bot_lip_percentages]
+        self.top_lip.set_increments(self.top_lip_emotion)
+        self.bot_lip.set_increments(self.bot_lip_emotion)
+
     def get_emotion(self):
-        return [self.top_lip_emotion, self.bot_lip_emotion]
+        """
+        Get the emotions of the lips as percentage values (0% to 100%).
+        """
+
+        def pixel_to_percentage(value, size):
+            return (value / size) * 100
+
+        top_lip_percentages = [pixel_to_percentage(val, self.size[1]) for val in self.top_lip_emotion]
+        bot_lip_percentages = [pixel_to_percentage(val, self.size[1]) for val in self.bot_lip_emotion]
+        return top_lip_percentages, bot_lip_percentages
