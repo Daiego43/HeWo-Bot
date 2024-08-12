@@ -2,6 +2,7 @@ import pygame
 import math
 from hewo.game.characters.hewo.eye import Eye
 from hewo.game.characters.hewo.mouth import Mouth
+from hewo.game.characters.hewo.control import FaceControls
 from settings.settings_loader import SettingsLoader
 
 PHI = (1 + math.sqrt(5)) / 2
@@ -9,20 +10,21 @@ settings = SettingsLoader().load_settings("settings.hewo")
 
 
 class Face:
-    MAX_SIZE = (960, 640)
     COLOR = (
         settings['surface']['color']['r'],
         settings['surface']['color']['g'],
         settings['surface']['color']['b']
     )
+    CONTROLS = FaceControls()
 
-    def __init__(self, position=None, color=COLOR, factor=350):
+    def __init__(self, position=None, color=COLOR, factor=350, enable_controls=True, max_size=(960, 640)):
         if position is None:
             position = [0, 0]
         self.size = [PHI * factor, factor]
         self.position = position
         self.color = color
         self.face_surface = pygame.surface.Surface(self.size)
+        self.max_size = max_size
 
         self.face_surface = pygame.surface.Surface(self.size)
         self.eye_size = [self.size[0] / 5, self.size[1] / 5 * 4]
@@ -36,6 +38,7 @@ class Face:
         self.right_eye = Eye(self.eye_size, self.right_eye_pos)
         self.mouth = Mouth(self.mouth_size, self.mouth_pos)
         self.set_face_elements()
+        self.enable_controls = enable_controls
 
     def set_face_elements(self):
         self.face_surface = pygame.surface.Surface(self.size)
@@ -54,47 +57,77 @@ class Face:
         self.mouth = Mouth(self.mouth_size, self.mouth_pos, init_emotion=emotion)
 
     def set_size(self, size):
-        self.size[0] = max(PHI, min(size[0], self.MAX_SIZE[0]))
-        self.size[1] = max(1, min(size[1], self.MAX_SIZE[1]))
+        self.size[0] = max(PHI, min(size[0], self.max_size[0]))
+        self.size[1] = max(1, min(size[1], self.max_size[1]))
 
     def set_position(self, pos):
-        self.position[0] = max(0, min(pos[0], self.MAX_SIZE[0] - self.size[0]))
-        self.position[1] = max(0, min(pos[1], self.MAX_SIZE[1] - self.size[1]))
+        self.position[0] = max(0, min(pos[0], self.max_size[0] - self.size[0]))
+        self.position[1] = max(0, min(pos[1], self.max_size[1] - self.size[1]))
 
     def update(self):
         self.left_eye.update()
         self.right_eye.update()
         self.mouth.update()
-        self.get_emotion()
+        self.handle_input()
+        self.update_emotion()
 
     def handle_event(self, event):
         self.left_eye.handle_event(event)
         self.right_eye.handle_event(event)
         self.mouth.handle_event(event)
+        self.CONTROLS.handle_event(event)
 
     def draw(self, surface):
         self.face_surface.fill(self.color)
         self.left_eye.draw(self.face_surface)
         self.right_eye.draw(self.face_surface)
         self.mouth.draw(self.face_surface)
-        self.face_surface = pygame.transform.scale(self.face_surface, [PHI * 128, 128])
-        self.face_surface = pygame.transform.scale(self.face_surface, self.size)
+        self.face_surface = pixelate(self.face_surface, 128, self.size)
         surface.blit(self.face_surface, dest=self.position)
+        if self.enable_controls:
+            self.CONTROLS.draw(surface)
 
     def get_emotion(self):
-        print("#" * 20)
         letl = self.left_eye.top_lash.get_emotion()
         lebl = self.left_eye.bot_lash.get_emotion()
         retl = self.right_eye.top_lash.get_emotion()
         rebl = self.right_eye.bot_lash.get_emotion()
         tl, bl = self.mouth.get_emotion()
-        print("Left Top Lash:", letl)
-        print("Left Bot Lash:", lebl)
-        print("Right Top Lash:", retl)
-        print("Right Bot Lash:", rebl)
-        print("Mouth Top Lip:", tl)
-        print("Mouth Bot Lip:", bl)
-        return [letl, lebl, retl, rebl, tl, bl]
+        emotions = [letl, lebl, retl, rebl, tl, bl]
+        emotions = [int(item) for sublist in emotions for item in sublist]
+        return emotions
 
-    def set_emotion(self):
-        pass
+    def set_emotions(self, edict):
+        letl = [edict['letl_a'], edict['letl_b'], edict['letl_c']]
+        lebl = [edict['lebl_a'], edict['lebl_b'], edict['lebl_c']]
+        # retl = emotions[6:9]
+        # rebl = emotions[9:12]
+        # tl = emotions[12:15]
+        # bl = emotions[15:]
+        self.left_eye.set_emotion(letl[:], lebl[:])
+        # self.right_eye.set_emotion(retl, rebl)
+        # self.mouth.set_emotion(tl, bl)
+
+    def update_emotion(self):
+        self.CONTROLS.update()
+        c = self.CONTROLS.get_values()
+        e = self.get_emotion()
+        print(e)
+        self.set_emotions(c)
+
+    def handle_input(self):
+        keys = pygame.key.get_pressed()
+        position, size = self.CONTROLS.handle_input(
+            keys, self.position, self.size
+        )
+        self.set_position(position)
+        self.set_size(size)
+        self.set_face_elements()
+
+
+# Surface Effects
+
+def pixelate(surface, pixels_factor=128, size=None):
+    surface = pygame.transform.scale(surface, [PHI * pixels_factor, pixels_factor])
+    surface = pygame.transform.scale(surface, size)
+    return surface

@@ -1,25 +1,27 @@
+"""
+Sandbox is the main scene where you can playtest with your game components
+"""
+
 import screeninfo
 import pygame
 import os
 import sys
 from hewo.settings.settings_loader import SettingsLoader
 
-display = SettingsLoader().load_settings('settings.display')
-
 
 class SandBox:
-    WINDOW_SIZE = (
-        display['width'],
-        display['height']
-    )
-    BACKGROUND_COLOR = (display['bg_color']['r'],
-                        display['bg_color']['g'],
-                        display['bg_color']['b'])
-    HEWO_DISPLAY = display['id']
-    HEWO_MONITOR_NAME = display['name']
 
-    def __init__(self, elements=None, fullscreen=False):
+    def __init__(self, elements=None, fullscreen=False, display=None):
         pygame.init()
+        self.WINDOW_SIZE = (
+            display['width'],
+            display['height']
+        )
+        self.BACKGROUND_COLOR = (display['bg_color']['r'],
+                                 display['bg_color']['g'],
+                                 display['bg_color']['b'])
+        self.HEWO_DISPLAY = display['id']
+        self.HEWO_MONITOR_NAME = display['name']
         self.find_and_set_display()
         pygame.display.set_caption("Testing Sandbox")
         print("Press F to toggle fullscreen.")
@@ -53,19 +55,18 @@ class SandBox:
         if not found:
             print("HeWo's display not found. Using default")
             print("Full screen will be disabled.")
-            self.HEWO_DISPLAY = 0
-            self.WINDOW_SIZE = 960, 640
 
     def run(self):
         while self.running:
             self.handle_events()
             self.update()
             self.draw()
-            self.clock.tick(60)
+            self.clock.tick()
         self.quit()
 
     def handle_events(self):
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
@@ -76,7 +77,7 @@ class SandBox:
                     self.running = False
             if self.elements is not None:
                 for elem in self.elements:
-                    elem.handle_event(event)
+                    elem.handle_event(events)
 
     def update(self):
         if self.elements is not None:

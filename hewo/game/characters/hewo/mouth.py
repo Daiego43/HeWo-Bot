@@ -8,7 +8,7 @@ mouth = settings['elements']['mouth']
 
 
 class Lip:
-    LIP_WIDTH = 10
+    LIP_WIDTH = 5
 
     def __init__(self, size, position, color):
         self.size = size
