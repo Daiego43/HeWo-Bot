@@ -82,7 +82,7 @@ class Face:
         self.left_eye.draw(self.face_surface)
         self.right_eye.draw(self.face_surface)
         self.mouth.draw(self.face_surface)
-        self.face_surface = pixelate(self.face_surface, 128, self.size)
+        # self.face_surface = pixelate(self.face_surface, 100, self.size)
         surface.blit(self.face_surface, dest=self.position)
         if self.enable_controls:
             self.CONTROLS.draw(surface)
@@ -100,19 +100,17 @@ class Face:
     def set_emotions(self, edict):
         letl = [edict['letl_a'], edict['letl_b'], edict['letl_c']]
         lebl = [edict['lebl_a'], edict['lebl_b'], edict['lebl_c']]
-        # retl = emotions[6:9]
-        # rebl = emotions[9:12]
-        # tl = emotions[12:15]
-        # bl = emotions[15:]
-        self.left_eye.set_emotion(letl[:], lebl[:])
-        # self.right_eye.set_emotion(retl, rebl)
-        # self.mouth.set_emotion(tl, bl)
+        retl = [edict['retl_a'], edict['retl_b'], edict['retl_c']]
+        rebl = [edict['rebl_a'], edict['rebl_b'], edict['rebl_c']]
+        tl = [edict['tl_a'], edict['tl_b'], edict['tl_c']]
+        bl = [edict['bl_a'], edict['bl_b'], edict['bl_c']]
+        self.left_eye.set_emotion(letl, lebl)
+        self.right_eye.set_emotion(retl, rebl)
+        self.mouth.set_emotion(tl, bl)
 
     def update_emotion(self):
         self.CONTROLS.update()
         c = self.CONTROLS.get_values()
-        e = self.get_emotion()
-        print(e)
         self.set_emotions(c)
 
     def handle_input(self):
