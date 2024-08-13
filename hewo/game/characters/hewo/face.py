@@ -1,119 +1,131 @@
-import random
 import pygame
-from hewo.game.characters.hewo.eyes import HeWoEye
-from hewo.game.characters.hewo.mouth import HeWoMouth
-from hewo.game.scenes.sandbox import SandBox
-from hewo.modules.perception.realsense_camera import RealSenseCamera
-from hewo.modules.perception.vision.mppeople import MediaPeopleFaces
+import math
+from hewo.game.characters.hewo.eye import Eye
+from hewo.game.characters.hewo.mouth import Mouth
+from hewo.game.characters.hewo.control import FaceControls
+from settings.settings_loader import SettingsLoader
+
+PHI = (1 + math.sqrt(5)) / 2
+settings = SettingsLoader().load_settings("settings.hewo")
 
 
-class HeWoFace:
-    FACE_SURFACE = (960, 640)
-    REDUCED_FACE_SURFACE = (960//6, 640//6)
-    MOUTH_SIZE = (FACE_SURFACE[0] // 6, FACE_SURFACE[1] // 6)
-    LEFT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
-    RIGHT_EYE_SIZE = (FACE_SURFACE[0] // 20, FACE_SURFACE[1] // 4)
+class Face:
+    COLOR = (
+        settings['surface']['color']['r'],
+        settings['surface']['color']['g'],
+        settings['surface']['color']['b']
+    )
+    CONTROLS = FaceControls()
 
-    DISTANCE_BETWEEN_EYES = MOUTH_SIZE[0]
+    def __init__(self, position=None, color=COLOR, factor=350, enable_controls=True, max_size=(960, 640)):
+        if position is None:
+            position = [0, 0]
+        self.size = [PHI * factor, factor]
+        self.position = position
+        self.color = color
+        self.face_surface = pygame.surface.Surface(self.size)
+        self.max_size = max_size
 
-    MOUTH_BBOX = ((MOUTH_SIZE[0] // 2, FACE_SURFACE[0] - MOUTH_SIZE[0] // 2),
-                  (MOUTH_SIZE[1] + LEFT_EYE_SIZE[1] // 2, FACE_SURFACE[1]))
+        self.face_surface = pygame.surface.Surface(self.size)
+        self.eye_size = [self.size[0] / 5, self.size[1] / 5 * 4]
+        self.mouth_size = [self.size[0] / 5 * 3, self.size[1] / 5]
 
-    LEFT_EYE_BBOX = ((0, FACE_SURFACE[0] - DISTANCE_BETWEEN_EYES - LEFT_EYE_SIZE[0] * 2.5),
-                     (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
+        self.left_eye_pos = [0, 0]  # in the canvas
+        self.right_eye_pos = [self.eye_size[0] * 4, 0]
+        self.mouth_pos = [self.eye_size[0], self.eye_size[1]]
 
-    RIGHT_EYE_BBOX = ((DISTANCE_BETWEEN_EYES + RIGHT_EYE_SIZE[0] * 2.5, FACE_SURFACE[0]),
-                      (0, FACE_SURFACE[1] - MOUTH_SIZE[1] // 2))
+        self.left_eye = Eye(self.eye_size, self.left_eye_pos)
+        self.right_eye = Eye(self.eye_size, self.right_eye_pos)
+        self.mouth = Mouth(self.mouth_size, self.mouth_pos)
+        self.set_face_elements()
+        self.enable_controls = enable_controls
 
-    MOVE_STEP = 1
+    def set_face_elements(self):
+        self.face_surface = pygame.surface.Surface(self.size)
+        self.eye_size = [self.size[0] / 5, self.size[1] / 5 * 4]
+        self.mouth_size = [self.size[0] / 5 * 3, self.size[1] / 5]
 
-    def __init__(self, enable_follow_mouse=False, enable_tracking=True):
-        self.elements = []
-        self.move_step = self.MOVE_STEP
-        self.elements.append(HeWoEye(name="left",
-                                     bbox=self.LEFT_EYE_BBOX,
-                                     size=self.LEFT_EYE_SIZE))
-        self.elements.append(HeWoEye(name="right",
-                                     bbox=self.RIGHT_EYE_BBOX,
-                                     size=self.RIGHT_EYE_SIZE))
-        self.elements.append(HeWoMouth(name="mouth",
-                                       size=self.MOUTH_SIZE,
-                                       bbox=self.MOUTH_BBOX))
-        self.enable_follow_mouse = enable_follow_mouse
-        self.enable_tracking = enable_tracking
-        try:
-            self.face_tracker = RealSenseCamera([MediaPeopleFaces()])
-            if enable_tracking:
-                self.face_tracker.start_camera()
-        except RuntimeError:
-            print("No RealSense Camera, tracking disabled.")
-            self.enable_tracking = False
-        self.face_surface = pygame.Surface(self.FACE_SURFACE)
+        self.left_eye_pos = [0, 0]  # in the canvas
+        self.right_eye_pos = [self.eye_size[0] * 4, 0]
+        self.mouth_pos = [self.eye_size[0], self.eye_size[1]]
+
+        emotion = self.left_eye.get_emotion()
+        self.left_eye = Eye(self.eye_size, self.left_eye_pos, init_emotion=emotion)
+        emotion = self.right_eye.get_emotion()
+        self.right_eye = Eye(self.eye_size, self.right_eye_pos, init_emotion=emotion)
+        emotion = self.mouth.get_emotion()
+        self.mouth = Mouth(self.mouth_size, self.mouth_pos, init_emotion=emotion)
+
+    def set_size(self, size):
+        self.size[0] = max(PHI, min(size[0], self.max_size[0]))
+        self.size[1] = max(1, min(size[1], self.max_size[1]))
+
+    def set_position(self, pos):
+        self.position[0] = max(0, min(pos[0], self.max_size[0] - self.size[0]))
+        self.position[1] = max(0, min(pos[1], self.max_size[1] - self.size[1]))
 
     def update(self):
+        self.left_eye.update()
+        self.right_eye.update()
+        self.mouth.update()
         self.handle_input()
-        if self.enable_follow_mouse:
-            self.follow_mouse()
-        if self.enable_tracking:
-            self.track()
-        for elem in self.elements:
-            elem.update()
-
-    def set_random_blink_rate(self):
-        blinking_rate = 15 * random.randint(1, 10)
-        self.elements[0].blink_rate = blinking_rate
-        self.elements[1].blink_rate = blinking_rate
-
-    def track(self):
-        # Always tracking the face at 0
-        face_result = self.face_tracker.get_objects()[0]
-        if face_result.get_bbox_list():
-            bbox = face_result.get_bbox_list()[0]
-            center = (bbox[0] + bbox[2] // 2, (bbox[1] + bbox[3] // 2))
-            center = self.transform_to_screen_coordinates(center)
-            self.set_elems_pos(center)
-
-    def transform_to_screen_coordinates(self, center):
-        # Transform coordinates from camera to screen and invert x-axis
-        camera_x, camera_y = center
-        inverted_camera_x = 640 - camera_x
-        screen_x = int(inverted_camera_x * self.FACE_SURFACE[0] / 640)
-        screen_y = int(camera_y * self.FACE_SURFACE[1] / 480)
-        return screen_x, screen_y
-
-    def draw(self, screen: pygame.Surface):
-        self.face_surface.fill(screen.get_at((0, 0)))  # Limpia la superficie a baja resolución
-        for elem in self.elements:
-            elem.draw(self.face_surface)
-        # Escalar la superficie a la resolución original
-        reduced = pygame.transform.scale(self.face_surface, self.REDUCED_FACE_SURFACE)
-        normal_again = pygame.transform.scale(reduced, self.FACE_SURFACE)
-        screen.blit(normal_again, (0, 0))
+        self.update_emotion()
 
     def handle_event(self, event):
-        for elem in self.elements:
-            elem.handle_event(event)
+        self.left_eye.handle_event(event)
+        self.right_eye.handle_event(event)
+        self.mouth.handle_event(event)
+        self.CONTROLS.handle_event(event)
+
+    def draw(self, surface):
+        self.face_surface.fill(self.color)
+        self.left_eye.draw(self.face_surface)
+        self.right_eye.draw(self.face_surface)
+        self.mouth.draw(self.face_surface)
+        # self.face_surface = pixelate(self.face_surface, 100, self.size)
+        surface.blit(self.face_surface, dest=self.position)
+        if self.enable_controls:
+            self.CONTROLS.draw(surface)
+
+    def get_emotion(self):
+        letl = self.left_eye.top_lash.get_emotion()
+        lebl = self.left_eye.bot_lash.get_emotion()
+        retl = self.right_eye.top_lash.get_emotion()
+        rebl = self.right_eye.bot_lash.get_emotion()
+        tl, bl = self.mouth.get_emotion()
+        emotions = [letl, lebl, retl, rebl, tl, bl]
+        emotions = [int(item) for sublist in emotions for item in sublist]
+        return emotions
+
+    def set_emotions(self, edict):
+        letl = [edict['letl_a'], edict['letl_b'], edict['letl_c']]
+        lebl = [edict['lebl_a'], edict['lebl_b'], edict['lebl_c']]
+        retl = [edict['retl_a'], edict['retl_b'], edict['retl_c']]
+        rebl = [edict['rebl_a'], edict['rebl_b'], edict['rebl_c']]
+        tl = [edict['tl_a'], edict['tl_b'], edict['tl_c']]
+        bl = [edict['bl_a'], edict['bl_b'], edict['bl_c']]
+        self.left_eye.set_emotion(letl, lebl)
+        self.right_eye.set_emotion(retl, rebl)
+        self.mouth.set_emotion(tl, bl)
+
+    def update_emotion(self):
+        self.CONTROLS.update()
+        c = self.CONTROLS.get_values()
+        self.set_emotions(c)
 
     def handle_input(self):
-        for elem in self.elements:
-            elem.handle_input(step=self.MOVE_STEP)
-
-    def set_elems_pos(self, pos):
-        distance_to_mouth = 50
-        for elem in self.elements:
-            if elem.name == 'mouth':
-                elem.set_position((pos[0], pos[1] + distance_to_mouth))
-            elif elem.name == 'left':
-                elem.set_position((pos[0] - distance_to_mouth, pos[1]))
-            elif elem.name == 'right':
-                elem.set_position((pos[0] + self.DISTANCE_BETWEEN_EYES + distance_to_mouth, pos[1]))
-
-    def follow_mouse(self):
-        pos = pygame.mouse.get_pos()
-        self.set_elems_pos(pos)
+        keys = pygame.key.get_pressed()
+        position, size = self.CONTROLS.handle_input(
+            keys, self.position, self.size
+        )
+        self.set_position(position)
+        self.set_size(size)
+        self.set_face_elements()
 
 
-if __name__ == '__main__':
-    elements = [HeWoFace(enable_follow_mouse=False)]
-    sandbox = SandBox(elements)
-    sandbox.run()
+# Surface Effects
+
+def pixelate(surface, pixels_factor=128, size=None):
+    surface = pygame.transform.scale(surface, [PHI * pixels_factor, pixels_factor])
+    surface = pygame.transform.scale(surface, size)
+    return surface

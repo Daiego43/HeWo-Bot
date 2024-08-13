@@ -1,124 +1,120 @@
 import pygame
-import math
-from hewo.game.scenes.sandbox import SandBox
+import numpy as np
+from scipy.interpolate import make_interp_spline
+from settings.settings_loader import SettingsLoader
+
+settings = SettingsLoader().load_settings("settings.hewo")
+mouth = settings['elements']['mouth']
 
 
-class HeWoMouth:
-    INIT_POSITION = (0, 0)
-    BBOX = ((960 // 20 * 2, 960 - 960 // 20 * 2),
-            (0, 640))
-    MOUTH_SIZE = (175, 50)
-    MOUTH_COLOR = (231, 210, 146)
-    MOVE_STEP = 20
-    MOUTHS = [
-        'smiling',
-        'talking',
-        None
-    ]
+class Lip:
+    LIP_WIDTH = 5
 
-    def __init__(self, name="mouth", position=INIT_POSITION, bbox=BBOX, size=MOUTH_SIZE):
-        self.name = name
-        self.position = position
+    def __init__(self, size, position, color):
         self.size = size
-        self.move_step = self.MOVE_STEP
-        self.bbox = bbox
-        self.set_position(position)
-        self.talk_frame = self.MOUTH_SIZE[1]
-        self.talk_increment = 15
-        self.mouth_state = self.MOUTHS[1]
-        self.mouth_i = 0
+        self.position = position
+        self.color = color
+        self.lip_points = np.array([
+            [0, 0],
+            [self.size[0] / 2, 0],
+            [self.size[0], 0]
+        ])
+        self.increments = [0, 0, 0]
+
+    def lip_shape(self):
+        x_points = np.array([p[0] for p in self.lip_points])
+        y_points = np.array([p[1] for p in self.lip_points])
+        y_points = self.set_y_points(y_points)
+        spline = make_interp_spline(x_points, y_points, k=2)
+        x_range = np.linspace(min(x_points), max(x_points), 500)
+        interpolated_points = [(int(x), int(spline(x))) for x in x_range]
+        return interpolated_points
+
+    def set_y_points(self, y_points):
+        for i, val in enumerate(zip(y_points, self.increments)):
+            point = val[0] + val[1]
+            clamped_value = max(self.LIP_WIDTH, min(point, self.size[1] - self.LIP_WIDTH))
+            y_points[i] = clamped_value
+        return y_points
+
+    def set_increments(self, increments):
+        for i in range(len(increments)):
+            increments[i] = max(0, min(increments[i], self.size[1]))
+        self.increments = increments
 
     def update(self):
-        self.handle_input()
+        pass
 
-    def handle_input(self, step=MOVE_STEP):
-        keys = pygame.key.get_pressed()
-        position = list(self.get_position())
-        if keys[pygame.K_UP]:
-            position[1] -= step
-        if keys[pygame.K_DOWN]:
-            position[1] += step
-        if keys[pygame.K_LEFT]:
-            position[0] -= step
-        if keys[pygame.K_RIGHT]:
-            position[0] += step
-        self.set_position(position)
-
-    def set_position(self, position):
-        size = self.size
-        if position[0] < self.bbox[0][0]:
-            position = (self.bbox[0][0], position[1])
-        if position[1] < self.bbox[1][0]:
-            position = (position[0], self.bbox[1][0])
-        if position[0] + size[0] > self.bbox[0][1]:
-            position = (self.bbox[0][1] - size[0], position[1])
-        if position[1] + size[1] > self.bbox[1][1]:
-            position = (position[0], self.bbox[1][1] - size[1])
-        self.position = position
+    def draw(self, surface):
+        points = self.lip_shape()
+        pygame.draw.lines(surface, self.color, False, points, self.LIP_WIDTH)
 
     def handle_event(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
-                self.toggle_talk()
-            if event.key == pygame.K_q:
-                self.mouth_state = self.MOUTHS[0]
-            if event.key == pygame.K_w:
-                self.mouth_state = self.MOUTHS[1]
-            if event.key == pygame.K_e:
-                self.mouth_state = self.MOUTHS[2]
+        pass
 
-    def toggle_talk(self):
-        if self.mouth_state == self.MOUTHS[1]:
-            self.mouth_state = self.MOUTHS[0]
-        else:
-            self.mouth_state = self.MOUTHS[1]
 
-    def get_position(self):
-        return self.position
+class Mouth:
+    COLOR = (
+        mouth['surface']['color']['r'],
+        mouth['surface']['color']['g'],
+        mouth['surface']['color']['b']
+    )
+    TOP_LIP = (
+        mouth['elements']['top_lip']['color']['r'],
+        mouth['elements']['top_lip']['color']['g'],
+        mouth['elements']['top_lip']['color']['b']
+    )
+    BOT_LIP = (
+        mouth['elements']['bot_lip']['color']['r'],
+        mouth['elements']['bot_lip']['color']['g'],
+        mouth['elements']['bot_lip']['color']['b']
+    )
 
-    def set_size(self, size):
+    def __init__(self, size, position, color=COLOR, init_emotion=[[0, 0, 0], [0, 0, 0]]):
         self.size = size
+        self.position = position
+        self.surface = pygame.Surface(self.size)
+        self.color = color
 
-    def draw(self, screen):
-        match self.mouth_state:
-            case 'talking':
-                self.move_lips()  # This is the only difference between the cases
-                self.talking_mouth_smiling(screen)
-            case 'smiling':
-                self.smiling_mouth(screen)
-            case _:
-                self.plane_mouth(screen)
+        self.top_lip_emotion = init_emotion[0]
+        self.bot_lip_emotion = init_emotion[1]
+        self.top_lip = Lip(self.size, self.position, self.TOP_LIP)
+        self.bot_lip = Lip(self.size, self.position, self.BOT_LIP)
 
-    def move_lips(self):
-        self.talk_frame += self.talk_increment  # Incrementa el paso para abrir/cerrar la boca
-        if self.talk_frame > self.size[1]:
-            self.talk_frame = self.size[1]
-            self.talk_increment *= -1
-        if self.talk_frame < 0:
-            self.talk_frame = 0
-            self.talk_increment *= -1
+    def draw(self, surface):
+        self.surface.fill(self.color)
+        self.top_lip.draw(self.surface)
+        self.bot_lip.draw(self.surface)
+        surface.blit(self.surface, self.position)
 
-    def talking_mouth_smiling(self, screen):
-        # Línea horizontal en medio
-        # Semicírculo inferior
-        # Debe encongerse y expandirse para simular el habla
+    def update(self):
+        self.top_lip.update()
+        self.bot_lip.update()
 
-        new_size = self.size[1] - self.talk_frame
-        curv = pygame.Rect(self.position[0], self.position[1],
-                           self.size[0], new_size)
-        start = self.position[0], self.position[1] + new_size // 2
-        end = self.position[0] + self.size[0], self.position[1] + new_size // 2
+    def handle_event(self, event):
+        pass
 
-        pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=5)
-        pygame.draw.arc(screen, self.MOUTH_COLOR, curv, 3.14, 0, 10)
+    def set_emotion(self, top_lip_percentages, bot_lip_percentages):
+        """
+        Set the emotions of the lips using percentage values (0% to 100%).
+        """
 
-    def smiling_mouth(self, screen):
-        start = self.position[0], self.position[1]
-        end = self.size[0], self.size[1]
-        rect = [start[0], start[1], end[0], end[1]]
-        pygame.draw.arc(screen, self.MOUTH_COLOR, rect, 3.14, 0, 10)
+        def percentage_to_pixel(value, size):
+            return int(value / 100 * size)
 
-    def plane_mouth(self, screen):
-        start = self.position[0], self.position[1] + self.size[1] // 2
-        end = self.position[0] + self.size[0], self.position[1] + self.size[1] // 2
-        pygame.draw.line(screen, self.MOUTH_COLOR, start_pos=start, end_pos=end, width=10)
+        self.top_lip_emotion = [percentage_to_pixel(val, self.size[1]) for val in top_lip_percentages]
+        self.bot_lip_emotion = [percentage_to_pixel(val, self.size[1]) for val in bot_lip_percentages]
+        self.top_lip.set_increments(self.top_lip_emotion)
+        self.bot_lip.set_increments(self.bot_lip_emotion)
+
+    def get_emotion(self):
+        """
+        Get the emotions of the lips as percentage values (0% to 100%).
+        """
+
+        def pixel_to_percentage(value, size):
+            return (value / size) * 100
+
+        top_lip_percentages = [pixel_to_percentage(val, self.size[1]) for val in self.top_lip_emotion]
+        bot_lip_percentages = [pixel_to_percentage(val, self.size[1]) for val in self.bot_lip_emotion]
+        return top_lip_percentages, bot_lip_percentages

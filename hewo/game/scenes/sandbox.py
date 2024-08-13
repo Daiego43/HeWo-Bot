@@ -1,17 +1,27 @@
+"""
+Sandbox is the main scene where you can playtest with your game components
+"""
+
 import screeninfo
 import pygame
 import os
 import sys
+from hewo.settings.settings_loader import SettingsLoader
 
 
 class SandBox:
-    WINDOW_SIZE = 960, 640
-    BACKGROUND_COLOR = (100, 139, 127)
-    HEWO_DISPLAY = 0
-    HEWO_MONITOR_NAME = "DP-1"
 
-    def __init__(self, elements=None, fullscreen=False):
+    def __init__(self, elements=None, fullscreen=False, display=None):
         pygame.init()
+        self.WINDOW_SIZE = (
+            display['width'],
+            display['height']
+        )
+        self.BACKGROUND_COLOR = (display['bg_color']['r'],
+                                 display['bg_color']['g'],
+                                 display['bg_color']['b'])
+        self.HEWO_DISPLAY = display['id']
+        self.HEWO_MONITOR_NAME = display['name']
         self.find_and_set_display()
         pygame.display.set_caption("Testing Sandbox")
         print("Press F to toggle fullscreen.")
@@ -34,7 +44,7 @@ class SandBox:
         print("Looking for HeWo's display...")
         found = False
         for i, monitor in enumerate(screeninfo.get_monitors()):
-            if monitor.name == self.HEWO_MONITOR_NAME:
+            if monitor.width == self.WINDOW_SIZE[0] and monitor.height == self.WINDOW_SIZE[1]:
                 self.HEWO_DISPLAY = i
                 self.WINDOW_SIZE = monitor.width, monitor.height
                 os.environ['SDL_VIDEO_WINDOW_POS'] = f"{monitor.x},{monitor.y}"
@@ -45,30 +55,29 @@ class SandBox:
         if not found:
             print("HeWo's display not found. Using default")
             print("Full screen will be disabled.")
-            self.HEWO_DISPLAY = 0
-            self.WINDOW_SIZE = 960, 640
 
     def run(self):
         while self.running:
             self.handle_events()
             self.update()
             self.draw()
-            self.clock.tick(60)
+            self.clock.tick()
         self.quit()
 
     def handle_events(self):
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_f:
+                if event.key == pygame.K_1:
                     if self.HEWO_DISPLAY != 0:
                         self.toggle_fullscreen()
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
             if self.elements is not None:
                 for elem in self.elements:
-                    elem.handle_event(event)
+                    elem.handle_event(events)
 
     def update(self):
         if self.elements is not None:
@@ -95,7 +104,7 @@ class SandBox:
                                                   display=self.HEWO_DISPLAY,
                                                   vsync=True)
             self.is_fullscreen = True
-        pygame.display.flip()  # Asegurarse de que la pantalla se actualice inmediatamente
+        pygame.display.flip()
 
     def quit(self):
         pygame.quit()
