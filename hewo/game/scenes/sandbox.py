@@ -73,7 +73,7 @@ class SandBox:
                 if event.key == pygame.K_1:
                     if self.HEWO_DISPLAY != 0:
                         self.toggle_fullscreen()
-                if event.key == pygame.K_ESCAPE:
+                if event.key == pygame.K_F2:
                     self.running = False
             if self.elements is not None:
                 for elem in self.elements:
