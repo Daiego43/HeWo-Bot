@@ -10,7 +10,8 @@ mouth = settings['elements']['mouth']
 class Lip:
     LIP_WIDTH = 5
 
-    def __init__(self, size, position, color):
+    def __init__(self, size, position, color, id=None):
+        self.id = id
         self.size = size
         self.position = position
         self.color = color
@@ -19,7 +20,6 @@ class Lip:
             'center': [self.size[0] / 2, 0],
             'right_commissure': [self.size[0], 0]
         }
-        # Increments now have [x_increment, y_increment] for the commissures
         self.increments = {
             'left_commissure': [0, 0],
             'center': 0,
@@ -27,15 +27,27 @@ class Lip:
         }
 
     def lip_shape(self):
-        x_points = np.array([
-            self.clamp(point[0] + (self.increments[key][0] if key != 'center' else 0), 0, self.size[0])
-            for key, point in self.lip_points.items()
-        ])
-        y_points = np.array([
-            self.clamp(point[1] + (self.increments[key][1] if key != 'center' else self.increments[key]),
-                       self.LIP_WIDTH, self.size[1] - self.LIP_WIDTH)
-            for key, point in self.lip_points.items()
-        ])
+        x_points = []
+        for key, point in self.lip_points.items():
+            if key == 'right_commissure':
+                increment_x = self.increments[key][0]
+                adjusted_x = self.clamp(self.size[0]/2 + increment_x, min_value=self.size[0]/2, max_value=self.size[0])
+            else:
+                increment_x = self.increments[key][0] if key != 'center' else 0
+                adjusted_x = self.clamp(point[0] + increment_x, min_value=0, max_value=self.size[0])
+            x_points.append(adjusted_x)
+
+        x_points = np.array(x_points)
+
+        y_points = []
+        for key, point in self.lip_points.items():
+            increment_y = self.increments[key][1] if key != 'center' else self.increments[key]
+            adjusted_y = self.clamp(point[1] + increment_y, min_value=self.LIP_WIDTH,
+                                    max_value=self.size[1] - self.LIP_WIDTH)
+            y_points.append(adjusted_y)
+
+        y_points = np.array(y_points)
+        print(x_points)
         spline = make_interp_spline(x_points, y_points, k=2)
         x_range = np.linspace(min(x_points), max(x_points), 500)
         return [(int(x), int(spline(x))) for x in x_range]
@@ -47,13 +59,15 @@ class Lip:
         for key in increments:
             if key == 'left_commissure':
                 x_increment, y_increment = increments[key]
-                self.increments[key][0] = self.clamp(int(x_increment / 100 * (self.size[0] / 2)), 0, self.size[0] / 2)
+                self.increments[key][0] = self.clamp(int(x_increment / 100 * (self.size[0] / 2)),
+                                                     min_value=0,
+                                                     max_value=self.size[0] / 2)
                 self.increments[key][1] = self.clamp(y_increment, 0, self.size[1])
             elif key == 'right_commissure':
                 x_increment, y_increment = increments[key]
-                self.increments[key][0] = self.clamp(
-                    self.size[0] - int(x_increment / 100 * (self.size[0] / 2)), self.size[0] / 2, self.size[0]
-                )
+                self.increments[key][0] = self.clamp(int(x_increment / 100 * (self.size[0] / 2)),
+                                                     min_value=1,
+                                                     max_value=self.size[0]/2)
                 self.increments[key][1] = self.clamp(y_increment, 0, self.size[1])
             else:
                 self.increments[key] = self.clamp(increments[key], 0, self.size[1])
@@ -88,7 +102,8 @@ class Mouth:
 
     def __init__(self, size, position, color=COLOR, init_emotion=None):
         if init_emotion is None:
-            init_emotion = [[0, 0, 0], [0, 0, 0]]
+            init_emotion = [[0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0]]
 
         self.size = size
         self.position = position
@@ -97,8 +112,9 @@ class Mouth:
 
         self.top_lip_emotion = init_emotion[0]
         self.bot_lip_emotion = init_emotion[1]
-        self.top_lip = Lip(self.size, self.position, self.TOP_LIP)
-        self.bot_lip = Lip(self.size, self.position, self.BOT_LIP)
+        self.top_lip = Lip(self.size, self.position, self.TOP_LIP, id='top')
+        self.bot_lip = Lip(self.size, self.position, self.BOT_LIP, id='bottom')
+        self.increments = self.get_emotion()
 
     def draw(self, surface):
         self.surface.fill(self.color)
@@ -135,18 +151,18 @@ class Mouth:
         """
         # Retrieve the x and y percentages for left and right commissures
         top_lip_percentages = (
-            self.increments['left_commissure'][0] / (self.size[0] / 2) * 100,
-            self.increments['left_commissure'][1] / self.size[1] * 100,
-            self.increments['center'] / self.size[1] * 100,
-            (self.size[0] - self.increments['right_commissure'][0]) / (self.size[0] / 2) * 100,
-            self.increments['right_commissure'][1] / self.size[1] * 100
+            self.top_lip.increments['left_commissure'][0] / (self.size[0] / 2) * 100,
+            self.top_lip.increments['left_commissure'][1] / self.size[1] * 100,
+            self.top_lip.increments['center'] / self.size[1] * 100,
+            self.top_lip.increments['right_commissure'][0] / (self.size[0] / 2) * 100,
+            self.top_lip.increments['right_commissure'][1] / self.size[1] * 100
         )
         bot_lip_percentages = (
-            self.increments['left_commissure'][0] / (self.size[0] / 2) * 100,
-            self.increments['left_commissure'][1] / self.size[1] * 100,
-            self.increments['center'] / self.size[1] * 100,
-            (self.size[0] - self.increments['right_commissure'][0]) / (self.size[0] / 2) * 100,
-            self.increments['right_commissure'][1] / self.size[1] * 100
+            self.bot_lip.increments['left_commissure'][0] / (self.size[0] / 2) * 100,
+            self.bot_lip.increments['left_commissure'][1] / self.size[1] * 100,
+            self.bot_lip.increments['center'] / self.size[1] * 100,
+            self.bot_lip.increments['right_commissure'][0] / (self.size[0] / 2) * 100,
+            self.bot_lip.increments['right_commissure'][1] / self.size[1] * 100
         )
         return top_lip_percentages, bot_lip_percentages
 
