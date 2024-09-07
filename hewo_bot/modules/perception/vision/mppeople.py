@@ -1,6 +1,6 @@
-from hewo.modules.perception.vision.mpface import MediaPeopleFaces
-from hewo.modules.perception.vision.mppose import MediaPeoplePoses
-from hewo.modules.perception.vision.mphands import MediaPeopleHands
+from hewo_bot.modules.perception.vision.mpface import MediaPeopleFaces
+from hewo_bot.modules.perception.vision.mppose import MediaPeoplePoses
+from hewo_bot.modules.perception.vision.mphands import MediaPeopleHands
 
 
 class MediaPeople:

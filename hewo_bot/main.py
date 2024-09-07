@@ -1,8 +1,9 @@
-from hewo.game.scenes.sandbox import SandBox
-from hewo.game.characters.hewo.face import Face
-from hewo.settings.settings_loader import SettingsLoader
+from hewo_bot.game.scenes.sandbox import SandBox
+from hewo_bot.game.characters.hewo.face_componentsface_components.face import Face
+from hewo_bot.settings.settings_loader import SettingsLoader
 
 display = SettingsLoader().load_settings('settings.displays.main')
+
 max_size = (display['width'], display['height'])
 pos = [display['width'] // 5, display['height'] // 5]
 

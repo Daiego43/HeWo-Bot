@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from scipy.interpolate import make_interp_spline
-from hewo.settings.settings_loader import SettingsLoader
+from hewo_bot.settings.settings_loader import SettingsLoader
 
 settings = SettingsLoader().load_settings("settings.hewo")
 

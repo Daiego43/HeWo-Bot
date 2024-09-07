@@ -1,8 +1,8 @@
 import pygame
 import math
-from hewo.game.characters.hewo.eye import Eye
-from hewo.game.characters.hewo.mouth import Mouth
-from hewo.game.characters.hewo.control import FaceControls
+from hewo_bot.game.characters.hewo.face_components.eye import Eye
+from hewo_bot.game.characters.hewo.face_components.mouth import Mouth
+from hewo_bot.game.characters.hewo.face_components.control import FaceControls
 from settings.settings_loader import SettingsLoader
 
 PHI = (1 + math.sqrt(5)) / 2

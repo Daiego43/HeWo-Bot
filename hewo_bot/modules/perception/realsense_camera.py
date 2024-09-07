@@ -4,7 +4,7 @@ import joblib
 import numpy as np
 import pyrealsense2 as rs
 import matplotlib.pyplot as plt
-from hewo.modules.perception.vision.mppeople import MediaPeople
+from hewo_bot.modules.perception.vision.mppeople import MediaPeople
 
 
 class RealSenseCamera:

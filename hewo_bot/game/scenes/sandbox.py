@@ -6,7 +6,7 @@ import screeninfo
 import pygame
 import os
 import sys
-from hewo.settings.settings_loader import SettingsLoader
+from hewo_bot.settings.settings_loader import SettingsLoader
 
 
 class SandBox:
