@@ -10,5 +10,5 @@ if __name__ == '__main__':
     elements = [
         Face(position=pos, enable_controls=False, max_size=max_size),
     ]
-    sandbox = SandBox(elements, fullscreen=True, display=display)
+    sandbox = SandBox(elements, fullscreen=False, display=display)
     sandbox.run()

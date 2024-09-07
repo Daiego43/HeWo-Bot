@@ -35,8 +35,8 @@ class FaceControls:
             'lebl_a', 'lebl_b', 'lebl_c',
             'retl_a', 'retl_b', 'retl_c',
             'rebl_a', 'rebl_b', 'rebl_c',
-            'tl_a', 'tl_b', 'tl_c',
-            'bl_a', 'bl_b', 'bl_c']
+            'tl_a', 'tl_b', 'tl_c', 'tl_d','tl_e',
+            'bl_a', 'bl_b', 'bl_c', 'bl_d','bl_e']
 
     # Notice that N == R and P == T.
     # TODO: Variable U is not implemented but will represent the distanced between N - P and R - T.

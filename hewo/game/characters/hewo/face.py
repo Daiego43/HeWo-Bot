@@ -102,8 +102,8 @@ class Face:
         lebl = [edict['lebl_a'], edict['lebl_b'], edict['lebl_c']]
         retl = [edict['retl_a'], edict['retl_b'], edict['retl_c']]
         rebl = [edict['rebl_a'], edict['rebl_b'], edict['rebl_c']]
-        tl = [edict['tl_a'], edict['tl_b'], edict['tl_c']]
-        bl = [edict['bl_a'], edict['bl_b'], edict['bl_c']]
+        tl = [edict['tl_a'], edict['tl_b'], edict['tl_c'], edict['tl_d'], edict['tl_e']]
+        bl = [edict['bl_a'], edict['bl_b'], edict['bl_c'], edict['bl_d'], edict['bl_e']]
         self.left_eye.set_emotion(letl, lebl)
         self.right_eye.set_emotion(retl, rebl)
         self.mouth.set_emotion(tl, bl)
