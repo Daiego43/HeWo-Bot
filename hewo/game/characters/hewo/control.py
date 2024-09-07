@@ -38,8 +38,6 @@ class FaceControls:
             'tl_a', 'tl_b', 'tl_c', 'tl_d','tl_e',
             'bl_a', 'bl_b', 'bl_c', 'bl_d','bl_e']
 
-    # Notice that N == R and P == T.
-    # TODO: Variable U is not implemented but will represent the distanced between N - P and R - T.
     # This is bc if not the mouth would go crazy.
     win_width = 425
     win_height = 10 + 30 * len(vars) + 60
