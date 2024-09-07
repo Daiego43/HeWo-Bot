@@ -31,7 +31,7 @@ class Lip:
         for key, point in self.lip_points.items():
             if key == 'right_commissure':
                 increment_x = self.increments[key][0]
-                adjusted_x = self.clamp(self.size[0]/2 + increment_x, min_value=self.size[0]/2, max_value=self.size[0])
+                adjusted_x = self.clamp(self.size[0] - increment_x, min_value=self.size[0]/2, max_value=self.size[0])
             else:
                 increment_x = self.increments[key][0] if key != 'center' else 0
                 adjusted_x = self.clamp(point[0] + increment_x, min_value=0, max_value=self.size[0])
@@ -47,7 +47,6 @@ class Lip:
             y_points.append(adjusted_y)
 
         y_points = np.array(y_points)
-        print(x_points)
         spline = make_interp_spline(x_points, y_points, k=2)
         x_range = np.linspace(min(x_points), max(x_points), 500)
         return [(int(x), int(spline(x))) for x in x_range]
