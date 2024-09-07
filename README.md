@@ -14,8 +14,7 @@ The tools are already out there, we have to use them all.
 
 And yes `HeWo` comes from `Hello World`.
 
-## Goals
-### Devices used
+## Devices used
 - Raspberry Pi 4 with and Adeept Motor HAT (from rasptank robot). The HAT makes it easier to control stuff.
 <p align="center">
   <img src="images/raspi1.png" alt="Raspberry Pi and HAT 1" width="50%">
@@ -37,6 +36,8 @@ And yes `HeWo` comes from `Hello World`.
 </p>
 It also has ports for everything, such as oudio output, usb, usb-type c, hdmi, etc...
 
+
+## Goals
 ### Basic
 - [x] Face expression setup 
 - [ ] Face expression control engine
