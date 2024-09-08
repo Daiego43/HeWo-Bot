@@ -53,6 +53,7 @@ class SandBox:
                 break
 
         if not found:
+            self.HEWO_DISPLAY = 1  # Note that this is not default
             print("HeWo's display not found. Using default")
             print("Full screen will be disabled.")
 

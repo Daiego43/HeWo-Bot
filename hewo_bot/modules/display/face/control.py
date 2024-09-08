@@ -7,7 +7,7 @@ from pygame_widgets.slider import Slider
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.button import Button
 
-emotion_dir = pathlib.Path("game/characters/hewo/emotions")
+emotion_dir = pathlib.Path("game/characters/hewo/face_components/emotions")
 
 
 class VariableSlider:
