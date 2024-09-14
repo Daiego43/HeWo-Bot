@@ -1,9 +1,9 @@
 import pygame
 import math
-from hewo_bot.modules.display.face.eye import Eye
-from hewo_bot.modules.display.face.mouth import Mouth
-from hewo_bot.modules.display.face.control import FaceControls
-from settings.settings_loader import SettingsLoader
+from src.modules.display.face.eye import Eye
+from src.modules.display.face.mouth import Mouth
+from src.modules.display.face.control import FaceControls
+from src.settings.settings_loader import SettingsLoader
 
 PHI = (1 + math.sqrt(5)) / 2
 settings = SettingsLoader().load_settings("settings.hewo")

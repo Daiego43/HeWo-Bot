@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from scipy.interpolate import make_interp_spline
-from settings.settings_loader import SettingsLoader
+from src.settings.settings_loader import SettingsLoader
 
 settings = SettingsLoader().load_settings("settings.hewo")
 mouth = settings['elements']['mouth']

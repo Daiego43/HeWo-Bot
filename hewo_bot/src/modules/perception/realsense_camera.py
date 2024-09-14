@@ -1,10 +1,9 @@
 import cv2
 import time
-import joblib
 import numpy as np
 import pyrealsense2 as rs
 import matplotlib.pyplot as plt
-from hewo_bot.modules.perception.vision.mppeople import MediaPeople
+from src.modules.perception.vision.mppeople import MediaPeople
 
 
 class RealSenseCamera:
