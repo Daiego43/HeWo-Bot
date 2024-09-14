@@ -14,6 +14,22 @@ The tools are already out there, we have to use them all.
 
 And yes `HeWo` comes from `Hello World`.
 
+## Infraestructure and Philosophy
+Originally, HeWo was just a face in a pygame window, but if we want to scale it up, the face itself should be a publisher
+and suscriber to a series of topics or commands.
+
+This is why we need to separate all of the face features in a separate module, and the same will be for every other
+feature of the robot.
+If then we follow this module philosophy, development will be clearer.(But keep in mind that as it will grow in complexity, more package segmentation will be needed).
+
+### First modules
+- **Face module**: Origin of the project. Face module is a pygame window that runs a ros node that take care of controlling the elements in the display. Controlling elements in the display is also really easy thanks to pygame.
+- **Vision module**: Using all of mediapipe features. This module could be divided in two: Camera and vision.
+- **Web monitor module**: Used to monitor and control robot behavior from a web interface.
+
+
+
+
 ## Devices used
 - Raspberry Pi 4 with and Adeept Motor HAT (from rasptank robot). The HAT makes it easier to control stuff.
 <p align="center">

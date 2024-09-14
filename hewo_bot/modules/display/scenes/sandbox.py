@@ -66,6 +66,7 @@ class SandBox:
         self.quit()
 
     def handle_events(self):
+        # To Do: Also use the handle events method to publish and suscribe to topics
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
@@ -81,6 +82,7 @@ class SandBox:
                     elem.handle_event(events)
 
     def update(self):
+        # To Do: Use update method to publish and suscribe to the corresponding topics
         if self.elements is not None:
             for elem in self.elements:
                 elem.update()
