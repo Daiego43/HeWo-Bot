@@ -1,0 +1,9 @@
+[submodule "hewo_bot/src/hewo_bot_module_display"]
+	path = hewo_bot/src/hewo_bot_module_display
+	url = https://github.com/Daiego43/hewo_bot_module_display.git
+[submodule "hewo_bot/src/hewo_bot_module_web_monitor"]
+	path = hewo_bot/src/hewo_bot_module_web_monitor
+	url = https://github.com/Daiego43/hewo_bot_module_web_monitor.git
+[submodule "hewo_bot/src/hewo_bot_module_perception"]
+	path = hewo_bot/src/hewo_bot_module_perception
+	url = https://github.com/Daiego43/hewo_bot_module_perception.git
