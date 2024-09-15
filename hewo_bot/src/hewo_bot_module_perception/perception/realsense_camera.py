@@ -3,7 +3,7 @@ import time
 import numpy as np
 import pyrealsense2 as rs
 import matplotlib.pyplot as plt
-from src.modules.perception.vision.mppeople import MediaPeople
+from src.hewo_bot_module_perception.perception.vision.mppeople import MediaPeople
 
 
 class RealSenseCamera:

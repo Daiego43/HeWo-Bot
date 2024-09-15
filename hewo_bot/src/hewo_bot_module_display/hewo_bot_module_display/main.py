@@ -1,6 +1,6 @@
-from src.modules.display.scenes.sandbox import SandBox
-from src.modules.display.face.face import Face
-from src.settings.settings_loader import SettingsLoader
+from src.hewo_bot_module_display.hewo_bot_module_display.display.scenes.sandbox import SandBox
+from src.hewo_bot_module_display.hewo_bot_module_display.display.face.face import Face
+from src.hewo_bot_module_display.hewo_bot_module_display.settings.settings_loader import SettingsLoader
 
 display = SettingsLoader().load_settings('settings.displays.main')
 
